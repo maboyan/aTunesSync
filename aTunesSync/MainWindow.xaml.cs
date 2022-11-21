@@ -13,6 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using aTunesSync.File;
+
 namespace aTunesSync
 {
     /// <summary>
@@ -23,6 +25,32 @@ namespace aTunesSync
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        public void Test()
+        {
+            WpdDeviceManager mng = new WpdDeviceManager();
+            using (var device = mng.SearchDevice("Pixel 7 Pro"))
+            {
+                if (device == null)
+                    return;
+
+                var musicDir = device.GetMusicDir();
+                if (musicDir == null)
+                    return;
+
+                var files = device.GetMusicFiles(musicDir);
+                foreach (var file in files)
+                {
+                    Console.WriteLine(file);
+                }
+            }
+                
+        }
+
+        private void TestButton_Click(object sender, RoutedEventArgs e)
+        {
+            Test();
         }
     }
 }
