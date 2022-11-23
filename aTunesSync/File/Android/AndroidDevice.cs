@@ -5,13 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace aTunesSync.File
+namespace aTunesSync.File.Android
 {
-    internal class WpdDevice : IDisposable
+    internal class AndroidDevice
+        : IDisposable
     {
         public MediaDevice Device { get; private set; }
 
-        public WpdDevice(MediaDevice device)
+        public AndroidDevice(MediaDevice device)
         {
             if (device == null)
                 throw new ArgumentNullException(nameof(device));
@@ -39,7 +40,7 @@ namespace aTunesSync.File
                 return null;
 
             var dirs = Device.GetDirectories(path);
-            foreach(var dir in dirs)
+            foreach (var dir in dirs)
             {
                 var sdir = dir.Split('\\');
                 var name = sdir.Last();
@@ -54,12 +55,7 @@ namespace aTunesSync.File
             return null;
         }
 
-        /// <summary>
-        /// 引数で与えられたルートフォルダから音楽ファイルを探し出して集合を作ってくれる
-        /// mp3, m4aを探す
-        /// </summary>
-        /// <param name="root">GetMusicDirectoryの戻り値</param>
-        /// <returns></returns>
+
         public SortedSet<FileBase> GetMusicFiles(string root)
         {
             var result = new SortedSet<FileBase>();
@@ -68,7 +64,7 @@ namespace aTunesSync.File
             foreach (var mp3 in mp3List)
             {
                 var info = Device.GetFileInfo(mp3);
-                var item = new WpdFile(info, root);
+                var item = new AndroidFile(info, root);
                 result.Add(item);
             }
 
@@ -76,7 +72,7 @@ namespace aTunesSync.File
             foreach (var m4a in m4aList)
             {
                 var info = Device.GetFileInfo(m4a);
-                var item = new WpdFile(info, root);
+                var item = new AndroidFile(info, root);
                 result.Add(item);
             }
 

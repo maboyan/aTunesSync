@@ -5,13 +5,32 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:aTunesSync"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="150" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right">Androidデバイス名</Label>
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding AndroidDeviceName.Value}" />
+
+            <Label Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right">Windows ディレクトリ</Label>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding WindowsRootDirectory.Value}" />
+        </Grid>
+            
         <Button Grid.Row="1" Click="TestButton_Click" Content="Test" />
 
     </Grid>

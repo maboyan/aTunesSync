@@ -7,12 +7,28 @@ using System.Threading.Tasks;
 
 namespace aTunesSync.File
 {
+    /// <summary>
+    /// Android、Windowsでのそれぞれのファイルを表すためのベースクラス
+    /// </summary>
     internal abstract class FileBase
         : IComparable<FileBase>
     {
+        /// <summary>
+        /// 基準となるパス
+        /// </summary>
+        public string RootPath { get; protected set; }
+
+        /// <summary>
+        /// Rootパスからの相対パス
+        /// </summary>
         public string RelativePath { get; protected set; }
+
+        /// <summary>
+        /// ファイルサイズ
+        /// </summary>
         public ulong Size { get; protected set; }
 
+        #region Object Override
         public override bool Equals(object obj)
         {
             return base.Equals(obj);
@@ -42,7 +58,9 @@ namespace aTunesSync.File
             var result = RelativePath;
             return result;
         }
+        #endregion
 
+        #region IComparable
         public int CompareTo(FileBase obj)
         {
             if (obj == null)
@@ -51,5 +69,6 @@ namespace aTunesSync.File
             var result = RelativePath.CompareTo(obj.RelativePath);
             return result;
         }
+        #endregion
     }
 }
