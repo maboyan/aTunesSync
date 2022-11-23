@@ -1,20 +1,21 @@
-﻿using MediaDevices;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace aTunesSync.File
+using System.IO;
+
+namespace aTunesSync.File.Windows
 {
-    internal class WpdFile
+    internal class WindowsFile
         : FileBase
     {
-        public static readonly string PATH_SEPARATOR = @"\";
+        public static readonly char PATH_SEPARATOR = Path.DirectorySeparatorChar;
 
-        public MediaFileInfo Info { get; private set; }
+        public FileInfo Info { get; private set; }
 
-        public WpdFile(MediaFileInfo info, string rootPath)
+        public WindowsFile(FileInfo info, string rootPath)
         {
             if (info == null)
                 throw new ArgumentNullException(nameof(info));
@@ -24,8 +25,9 @@ namespace aTunesSync.File
             Info = info;
 
             // FileBase
+            RootPath = rootPath;
             RelativePath = info.FullName.Substring(rootPath.Length + 1); // +1 = PATH_SEPARATOR
-            Size = info.Length;
+            Size = (ulong)info.Length;
         }
     }
 }

@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="MediaDevices" Version="1.9.1" />
+    <PackageReference Include="ReactiveProperty" Version="8.2.0" />
   </ItemGroup>
 
 </Project>
