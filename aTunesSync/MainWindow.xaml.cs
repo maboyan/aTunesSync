@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using Microsoft.WindowsAPICodePack.Dialogs;
 using aTunesSync.File;
 using aTunesSync.File.Android;
 using aTunesSync.File.Windows;
@@ -36,22 +37,56 @@ namespace aTunesSync
             LoadSettings();
         }
 
-        private void TestButton_Click(object sender, RoutedEventArgs e)
+        #region Check Sync Button
+        private async void CheckButton_Click(object sender, RoutedEventArgs e)
         {
-            Test();
+            await TestAsync();
             SaveSettings();
         }
 
-        public void Test()
+        private async void SyncButton_Click(object sender, RoutedEventArgs e)
         {
-            var androidFiles = GetAndroidFiles(m_mainViewModel.AndroidDeviceName.Value);
-            var windowsFiles = GetWindowsFiles(m_mainViewModel.WindowsRootDirectory.Value);
         }
 
-        private SortedSet<FileBase> GetAndroidFiles(string deviceName)
+        public  async Task TestAsync()
         {
             var mng = new AndroidFileManager();
-            var result = mng.GetMusicFiles(deviceName);
+            using (var device = mng.SearchDevice(m_mainViewModel.AndroidDeviceName.Value))
+            {
+                if (device == null)
+                    return;
+
+                var androidFiles = GetAndroidFiles(device);
+                var windowsFiles = GetWindowsFiles(m_mainViewModel.WindowsRootDirectory.Value);
+
+                var sync = new FileSync();
+                var content = await sync.CheckAsync(device, androidFiles, windowsFiles);
+                m_mainViewModel.SyncContentList.Clear();
+                foreach(var deleteItem in content.AndroidOnlySet)
+                {
+                    m_mainViewModel.SyncContentList.Add(new SyncContent()
+                    {
+                        Category = "Delete",
+                        Name = deleteItem.Name,
+                        Path = deleteItem.FullPath
+                    });
+                }
+                foreach (var addItem in content.WindowsOnlySet)
+                {
+                    m_mainViewModel.SyncContentList.Add(new SyncContent()
+                    {
+                        Category = "Copy",
+                        Name = addItem.Name,
+                        Path = addItem.FullPath
+                    });
+                }
+            }
+        }
+
+        private SortedSet<FileBase> GetAndroidFiles(AndroidDevice device)
+        {
+            device.Initialize();
+            var result = device.GetMusicFiles();
             return result;
         }
 
@@ -61,6 +96,7 @@ namespace aTunesSync
             var result = mng.GetMusicFiles(root);
             return result;
         }
+        #endregion
 
         #region User Settings
         public void SaveSettings()
@@ -102,5 +138,25 @@ namespace aTunesSync
             return result;
         }
         #endregion
+
+        #region Windows Music Root Button
+        private void WindowsRootButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new CommonOpenFileDialog();
+            dlg.IsFolderPicker = true;
+            if (!string.IsNullOrWhiteSpace(m_mainViewModel.WindowsRootDirectory.Value) && System.IO.Directory.Exists(m_mainViewModel.WindowsRootDirectory.Value))
+                dlg.InitialDirectory = m_mainViewModel.WindowsRootDirectory.Value;
+
+            if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                m_mainViewModel.WindowsRootDirectory.Value = dlg.FileName;
+            }
+        }
+        #endregion
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

@@ -11,9 +11,17 @@ namespace aTunesSync.File.Windows
     internal class WindowsFile
         : FileBase
     {
-        public static readonly char PATH_SEPARATOR = Path.DirectorySeparatorChar;
 
         public FileInfo Info { get; private set; }
+
+        public static readonly char PATH_SEPARATOR = Path.DirectorySeparatorChar;
+        public override char DirectorySeparatorChar
+        {
+            get
+            {
+                return PATH_SEPARATOR;
+            }
+        }
 
         public WindowsFile(FileInfo info, string rootPath)
         {

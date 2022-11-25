@@ -1,4 +1,5 @@
-﻿using MediaDevices;
+﻿using aTunesSync.File.Windows;
+using MediaDevices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,8 @@ namespace aTunesSync.File.Android
     {
         public MediaDevice Device { get; private set; }
 
+        public string MusicDirectory { get; private set; }
+
         public AndroidDevice(MediaDevice device)
         {
             if (device == null)
@@ -21,12 +24,19 @@ namespace aTunesSync.File.Android
             Device.Connect();
         }
 
-        #region Enum
+        #region Initialize
         /// <summary>
-        /// Musicのルートフォルダを取得する
+        /// 初期化
         /// </summary>
-        /// <returns></returns>
-        public string GetMusicDirectory()
+        /// <exception cref="MusicDirectoryNotFoundException"></exception>
+        public void Initialize()
+        {
+            MusicDirectory = GetMusicDirectory();
+            if (MusicDirectory == null)
+                throw new MusicDirectoryNotFoundException();
+        }
+
+        private string GetMusicDirectory()
         {
             var root = Device.GetRootDirectory();
             var result = GetMusicDirectory(root.FullName, 2);
@@ -54,10 +64,20 @@ namespace aTunesSync.File.Android
 
             return null;
         }
+        #endregion
 
-
-        public SortedSet<FileBase> GetMusicFiles(string root)
+        #region Files
+        /// <summary>
+        /// GetMusicDirectoryで取得したrootからmp3, m4aファイルを探す
+        /// </summary>
+        /// <param name="root"></param>
+        /// <returns></returns>
+        public SortedSet<FileBase> GetMusicFiles()
         {
+            if (string.IsNullOrWhiteSpace(MusicDirectory))
+                throw new InvalidOperationException("Initialize not call");
+
+            var root = MusicDirectory;
             var result = new SortedSet<FileBase>();
 
             var mp3List = Device.GetFileSystemEntries(root, "*.mp3", System.IO.SearchOption.AllDirectories);
@@ -77,6 +97,47 @@ namespace aTunesSync.File.Android
             }
 
             return result;
+        }
+        #endregion
+
+        #region Copy Delete
+        /// <summary>
+        /// ファイルをWindows側からAndroid側にコピーする
+        /// </summary>
+        /// <param name="file"></param>
+        /// <exception cref="InvalidOperationException"></exception>
+        public void Copy(WindowsFile file)
+        {
+            if (file == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(MusicDirectory))
+                throw new InvalidOperationException("Initialize not call");
+
+            // ディレクトリがないなら作成
+            var path = AndroidFile.CombinePath(MusicDirectory, file.RelativePath);
+            var dirPath = AndroidFile.GetDirectoryPath(path);
+            if (!Device.DirectoryExists(dirPath))
+                Device.CreateDirectory(dirPath);
+
+            // ファイルコピー
+            using (var stream = new System.IO.FileStream(file.FullPath, System.IO.FileMode.Open))
+            {
+                Device.UploadFile(stream, path);
+            }
+        }
+
+        /// <summary>
+        /// Android側のファイルを削除する
+        /// </summary>
+        /// <param name="file"></param>
+        public void Delete(AndroidFile file)
+        {
+            if (file == null)
+                return;
+
+            var path = file.FullPath;
+            Device.DeleteFile(path);
         }
         #endregion
 

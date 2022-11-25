@@ -10,6 +10,12 @@ namespace aTunesSync.File.Android
 {
     internal class AndroidFileManager
     {
+        /// <summary>
+        /// 引数の名前のデバイスを探す
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public AndroidDevice SearchDevice(string name)
         {
             if (name == null)
@@ -21,29 +27,6 @@ namespace aTunesSync.File.Android
                 return null;
 
             return new AndroidDevice(device);
-        }
-
-        /// <summary>
-        /// 引数deviceNameのデバイスから音楽フォルダを探し出してmp3, m4aファイルを探す
-        /// </summary>
-        /// <param name="deviceName"></param>
-        /// <returns></returns>
-        /// <exception cref="DeviceNotFoundException">引数デバイスが見つからない</exception>
-        /// <exception cref="MusicDirectoryNotFoundException">デバイスは見つかったけど音楽フォルダが見つからない</exception>
-        public SortedSet<FileBase> GetMusicFiles(string deviceName)
-        {
-            using (var device = SearchDevice(deviceName))
-            {
-                if (device == null)
-                    throw new DeviceNotFoundException(deviceName);
-
-                var musicDir = device.GetMusicDirectory();
-                if (musicDir == null)
-                    throw new MusicDirectoryNotFoundException();
-
-                var files = device.GetMusicFiles(musicDir);
-                return files;
-            }
         }
     }
 }
