@@ -56,8 +56,8 @@ namespace aTunesSync
                 if (device == null)
                     return;
 
-                var androidFiles = GetAndroidFiles(device);
-                var windowsFiles = GetWindowsFiles(m_mainViewModel.WindowsRootDirectory.Value);
+                var androidFiles = await GetAndroidFilesAsync(device);
+                var windowsFiles = await GetWindowsFilesAsync(m_mainViewModel.WindowsRootDirectory.Value);
 
                 var sync = new FileSync();
                 var content = await sync.CheckAsync(device, androidFiles, windowsFiles);
@@ -83,17 +83,30 @@ namespace aTunesSync
             }
         }
 
-        private SortedSet<FileBase> GetAndroidFiles(AndroidDevice device)
+        private async Task<SortedSet<FileBase>> GetAndroidFilesAsync(AndroidDevice device)
         {
-            device.Initialize();
-            var result = device.GetMusicFiles();
+            SortedSet<FileBase> result = null;
+
+            await Task.Run(() =>
+            {
+                device.Initialize();
+                result = device.GetMusicFiles();
+            });
+
             return result;
+
         }
 
-        private SortedSet<FileBase> GetWindowsFiles(string root)
+        private async Task<SortedSet<FileBase>> GetWindowsFilesAsync(string root)
         {
-            var mng = new WindowsFileManager();
-            var result = mng.GetMusicFiles(root);
+            SortedSet<FileBase> result = null;
+
+            await Task.Run(() =>
+            {
+                var mng = new WindowsFileManager();
+                result = mng.GetMusicFiles(root);
+            });
+            
             return result;
         }
         #endregion
