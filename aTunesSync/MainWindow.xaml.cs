@@ -40,7 +40,7 @@ namespace aTunesSync
         #region Check Sync Button
         private async void CheckButton_Click(object sender, RoutedEventArgs e)
         {
-            await TestAsync();
+            await CheckAsync();
             SaveSettings();
         }
 
@@ -48,7 +48,7 @@ namespace aTunesSync
         {
         }
 
-        public  async Task TestAsync()
+        public  async Task CheckAsync()
         {
             var mng = new AndroidFileManager();
             using (var device = mng.SearchDevice(m_mainViewModel.AndroidDeviceName.Value))
