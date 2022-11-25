@@ -5,33 +5,56 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:aTunesSync"
         mc:Ignorable="d"
-        Title="MainWindow" Height="150" Width="800">
+        Title="MainWindow" Height="600" Width="800">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
+        <Grid Grid.Column="0">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-
-            <Label Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right">Androidデバイス名</Label>
-            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding AndroidDeviceName.Value}" />
-
-            <Label Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right">Windows ディレクトリ</Label>
-            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding WindowsRootDirectory.Value}" />
-        </Grid>
             
-        <Button Grid.Row="1" Click="TestButton_Click" Content="Test" />
+            <StackPanel Grid.Row="0">
+                <Label>Androidデバイス名</Label>
+                <TextBox Margin="5 0 5 0" Text="{Binding AndroidDeviceName.Value}" />
+
+                <Label>Windowsサウンドディレクトリ</Label>
+                <Grid Margin="5 0 5 10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox Grid.Column="0" Margin="0 0 10 0" Text="{Binding WindowsRootDirectory.Value}" />
+                    <Button Grid.Column="1" Width="50" Content="参照" Click="WindowsRootButton_Click" />
+                </Grid>
+
+            </StackPanel>
+
+            <ListView Grid.Row="1" ItemsSource="{Binding SyncContentList}" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=Category}">
+                            <GridViewColumnHeader Content="Action" />
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=Name}" Width="150">
+                            <GridViewColumnHeader Content="Name" />
+                        </GridViewColumn>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=Path}">
+                            <GridViewColumnHeader Content="Path" />
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+
+            <Button Grid.Row="2" Margin="0 5 70 5" HorizontalAlignment="Right" Click="CheckButton_Click" Width="50" Content="Check" />
+            <Button Grid.Row="2" Margin="0 5 5 5" HorizontalAlignment="Right" Click="SyncButton_Click" Width="50" Content="Sync" />
+        </Grid><!-- Left -->
 
     </Grid>
 </Window>
