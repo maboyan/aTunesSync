@@ -10,10 +10,12 @@ namespace aTunesSync.ViewModel
 {
     internal class MainViewModel
     {
-        public ReactiveProperty<string> AndroidDeviceName { get; set; } = new ReactiveProperty<string>();
-        public ReactiveProperty<string> WindowsRootDirectory { get; set; } = new ReactiveProperty<string>();
-        public ReactiveProperty<string> iTunesLibraryPath { get; set; } = new ReactiveProperty<string>();
+        public ReactiveProperty<string> AndroidDeviceName { get; set; } = new ReactiveProperty<string>("");
+        public ReactiveProperty<string> WindowsRootDirectory { get; set; } = new ReactiveProperty<string>("");
+        public ReactiveProperty<string> iTunesLibraryPath { get; set; } = new ReactiveProperty<string>("");
 
         public ReactiveCollection<SyncContent> SyncContentList { get; set; } = new ReactiveCollection<SyncContent>();
+
+        public ReactiveProperty<string> Log { get; set; } = new ReactiveProperty<string>("");
     }
 }

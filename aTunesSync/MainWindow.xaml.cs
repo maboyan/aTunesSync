@@ -19,6 +19,7 @@ using aTunesSync.File;
 using aTunesSync.File.Android;
 using aTunesSync.File.Windows;
 using aTunesSync.ViewModel;
+using System.Security.Cryptography.X509Certificates;
 
 namespace aTunesSync
 {
@@ -50,11 +51,15 @@ namespace aTunesSync
 
         public  async Task CheckAsync()
         {
+            AddLog("Start CheckAsync");
             var mng = new AndroidFileManager();
             using (var device = mng.SearchDevice(m_mainViewModel.AndroidDeviceName.Value))
             {
                 if (device == null)
+                {
+                    AddLog($"{m_mainViewModel.AndroidDeviceName.Value} Not Found");
                     return;
+                }
 
                 var androidFiles = await GetAndroidFilesAsync(device);
                 var windowsFiles = await GetWindowsFilesAsync(m_mainViewModel.WindowsRootDirectory.Value);
@@ -81,6 +86,7 @@ namespace aTunesSync
                     });
                 }
             }
+            AddLog("End CheckAsync");
         }
 
         private async Task<SortedSet<FileBase>> GetAndroidFilesAsync(AndroidDevice device)
@@ -167,9 +173,18 @@ namespace aTunesSync
         }
         #endregion
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void AddLog(string log, bool bAddDate=true)
         {
+            if (log == null)
+                return;
 
+            var addLog = log;
+            if (bAddDate)
+            {
+                var now = DateTime.Now.ToString("hh:mm:ss");
+                addLog = $"{now} {log}";
+            }
+            m_mainViewModel.Log.Value += addLog + "\n";
         }
     }
 }
