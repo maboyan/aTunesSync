@@ -11,7 +11,8 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-
+        
+        <!-- Left -->
         <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -55,6 +56,11 @@
             <Button Grid.Row="2" Margin="0 5 70 5" HorizontalAlignment="Right" Click="CheckButton_Click" Width="50" Content="Check" />
             <Button Grid.Row="2" Margin="0 5 5 5" HorizontalAlignment="Right" Click="SyncButton_Click" Width="50" Content="Sync" />
         </Grid><!-- Left -->
+
+        <!-- Right -->
+        <Grid Grid.Column="1">
+            <TextBlock Text="{Binding Log.Value}" />
+        </Grid><!-- Right -->
 
     </Grid>
 </Window>
