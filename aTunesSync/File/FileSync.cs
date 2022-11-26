@@ -12,12 +12,15 @@ namespace aTunesSync.File
 {
     internal class FileSync
     {
-        public delegate void MessageEventHandler(string message);
-
         /// <summary>
         /// メソッド呼び出し中のログ
         /// </summary>
         public event MessageEventHandler MessageEvent;
+
+        /// <summary>
+        /// Syncの進捗
+        /// </summary>
+        public event ProgressEventHandler SyncProgressEvent;
 
         /// <summary>
         /// 同期するファイル内容を確認する
@@ -64,6 +67,14 @@ namespace aTunesSync.File
 
             await Task.Run(() =>
             {
+                var sum = 0;
+                if (content.AndroidOnlySet != null)
+                    sum += content.AndroidOnlySet.Count();
+                if (content.WindowsOnlySet != null)
+                    sum += content.WindowsOnlySet.Count();
+
+                var now = 0;
+
                 // android onlyはファイル削除
                 // 先に消すことでandroidへコピー時に上書き例外がでないようにする
                 if (content.AndroidOnlySet != null)
@@ -82,6 +93,9 @@ namespace aTunesSync.File
 
                         MessageEvent($"[DELETE] {androidItem}");
                         device.Delete(androidItem);
+
+                        ++now;
+                        SyncProgressEvent(now, sum);
                     }
                 }
 
@@ -109,6 +123,9 @@ namespace aTunesSync.File
                         {
                             MessageEvent($"[SKIP] {windowsItem} {e.Message}");
                         }
+
+                        ++now;
+                        SyncProgressEvent(now, sum);
                     }
                 }
 

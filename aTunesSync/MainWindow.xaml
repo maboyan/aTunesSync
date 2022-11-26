@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:aTunesSync"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="800">
+        Title="aTunesSync" Height="600" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -53,8 +53,22 @@
                 </ListView.View>
             </ListView>
 
-            <Button Grid.Row="2" Margin="0 5 70 5" HorizontalAlignment="Right" Click="CheckButton_Click" Width="50" Content="Check" IsEnabled="{Binding CheckButtonEnable.Value}" />
-            <Button Grid.Row="2" Margin="0 5 5 5" HorizontalAlignment="Right" Click="SyncButton_Click" Width="50" Content="{Binding SyncButtonText.Value}" IsEnabled="{Binding SyncButtonEnable.Value}" />
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <ProgressBar Margin="5 5 5 5" Minimum="0" Maximum="100" Value="{Binding ProgressBarValue.Value}" />
+                    <TextBlock Text="{Binding ProgressBarText.Value}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                </Grid>
+                <Button Grid.Column="1" Margin="5 5 5 5" HorizontalAlignment="Right" Click="CheckButton_Click" Width="50" Content="Check" IsEnabled="{Binding CheckButtonEnable.Value}" />
+                <Button Grid.Column="2" Margin="5 5 5 5" HorizontalAlignment="Right" Click="SyncButton_Click" Width="50" Content="{Binding SyncButtonText.Value}" IsEnabled="{Binding SyncButtonEnable.Value}" />
+            </Grid>
+            
         </Grid><!-- Left -->
 
         <!-- Right -->

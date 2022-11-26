@@ -12,8 +12,24 @@ namespace aTunesSync.File.Android
     internal class AndroidDevice
         : IDisposable
     {
+        /// <summary>
+        /// メソッド呼び出し中のログ
+        /// </summary>
+        public event MessageEventHandler MessageEvent;
+
+        /// <summary>
+        /// GetMusicFilesの進捗
+        /// </summary>
+        public event ProgressEventHandler GetMusicFilesProgressEvent;
+
+        /// <summary>
+        /// デバイス操作ハンドル
+        /// </summary>
         public MediaDevice Device { get; private set; }
 
+        /// <summary>
+        /// 音楽格納パス
+        /// </summary>
         public string MusicDirectory { get; private set; }
 
         public AndroidDevice(MediaDevice device)
@@ -82,19 +98,28 @@ namespace aTunesSync.File.Android
             var result = new SortedSet<FileBase>();
 
             var mp3List = Device.GetFileSystemEntries(root, "*.mp3", System.IO.SearchOption.AllDirectories);
+            var m4aList = Device.GetFileSystemEntries(root, "*.m4a", System.IO.SearchOption.AllDirectories);
+            var sum = mp3List.Count() + m4aList.Count();
+            var now = 0;
+
             foreach (var mp3 in mp3List)
             {
                 var info = Device.GetFileInfo(mp3);
                 var item = new AndroidFile(info, root);
                 result.Add(item);
+
+                ++now;
+                GetMusicFilesProgressEvent(now, sum);
             }
 
-            var m4aList = Device.GetFileSystemEntries(root, "*.m4a", System.IO.SearchOption.AllDirectories);
             foreach (var m4a in m4aList)
             {
                 var info = Device.GetFileInfo(m4a);
                 var item = new AndroidFile(info, root);
                 result.Add(item);
+
+                ++now;
+                GetMusicFilesProgressEvent(now, sum);
             }
 
             return result;

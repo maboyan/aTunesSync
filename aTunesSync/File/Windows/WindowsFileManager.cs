@@ -12,6 +12,16 @@ namespace aTunesSync.File.Windows
     internal class WindowsFileManager
     {
         /// <summary>
+        /// メソッド呼び出し中のログ
+        /// </summary>
+        public event MessageEventHandler MessageEvent;
+
+        /// <summary>
+        /// GetMusicFilesの進捗
+        /// </summary>
+        public event ProgressEventHandler GetMusicFilesProgressEvent;
+
+        /// <summary>
         /// 引数rootの中からmp3, m4aファイルを探す
         /// </summary>
         /// <param name="root"></param>
@@ -21,19 +31,28 @@ namespace aTunesSync.File.Windows
             var result = new SortedSet<FileBase>();
 
             var mp3List = Directory.GetFiles(root, "*.mp3", SearchOption.AllDirectories);
+            var m4aList = Directory.GetFiles(root, "*.m4a", SearchOption.AllDirectories);
+            var sum = mp3List.Count() + m4aList.Count();
+            var now = 0;
+
             foreach (var mp3 in mp3List)
             {
                 var info = new FileInfo(mp3);
                 var item = new WindowsFile(info, root);
                 result.Add(item);
+
+                ++now;
+                GetMusicFilesProgressEvent(now, sum);
             }
 
-            var m4aList = Directory.GetFiles(root, "*.m4a", SearchOption.AllDirectories);
             foreach (var m4a in m4aList)
             {
                 var info = new FileInfo(m4a);
                 var item = new WindowsFile(info, root);
                 result.Add(item);
+
+                ++now;
+                GetMusicFilesProgressEvent(now, sum);
             }
 
             return result;
