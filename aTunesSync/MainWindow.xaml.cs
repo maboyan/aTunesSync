@@ -63,10 +63,13 @@ namespace aTunesSync
                 {
                     SetAllButtonEnable(false);
 
+                    AddLog("Get Android File List");
                     var androidFiles = await GetAndroidFilesAsync(device);
+                    AddLog("Get Windows File List");
                     var windowsFiles = await GetWindowsFilesAsync(m_mainViewModel.WindowsRootDirectory.Value);
 
                     var sync = new FileSync();
+                    AddLog("Create Sync Content");
                     m_fileSync = await sync.CheckAsync(device, androidFiles, windowsFiles);
                     m_mainViewModel.SyncContentList.Clear();
                     foreach (var deleteItem in m_fileSync.AndroidOnlySet)
@@ -95,6 +98,7 @@ namespace aTunesSync
                 finally
                 {
                     SetAllButtonEnable(true);
+                    ClearProgressBar();
                 }
 
             }
@@ -108,6 +112,11 @@ namespace aTunesSync
             await Task.Run(() =>
             {
                 device.Initialize();
+                device.GetMusicFilesProgressEvent += (now, num) =>
+                {
+                    m_mainViewModel.ProgressBarValue.Value = now * 100 / num;
+                    m_mainViewModel.ProgressBarText.Value = $"{now} / {num}";
+                };
                 result = device.GetMusicFiles();
             });
 
@@ -121,6 +130,11 @@ namespace aTunesSync
             await Task.Run(() =>
             {
                 var mng = new WindowsFileManager();
+                mng.GetMusicFilesProgressEvent += (now, num) =>
+                {
+                    m_mainViewModel.ProgressBarValue.Value = now * 100 / num;
+                    m_mainViewModel.ProgressBarText.Value = $"{now} / {num}";
+                };
                 result = mng.GetMusicFiles(root);
             });
             
@@ -165,7 +179,18 @@ namespace aTunesSync
                 m_cancelSource = new CancellationTokenSource();
 
                 var sync = new FileSync();
-                sync.MessageEvent += (str) => { AddLog(str); };
+                // イベント登録
+                sync.MessageEvent += (str) =>
+                {
+                    AddLog(str);
+                };
+                sync.SyncProgressEvent += (now, num) =>
+                {
+                    m_mainViewModel.ProgressBarValue.Value = now * 100 / num;
+                    m_mainViewModel.ProgressBarText.Value = $"{now} / {num}";
+                };
+
+                // 同期開始
                 try
                 {
                     SetButtonSyncToCancel();
@@ -183,6 +208,7 @@ namespace aTunesSync
                 finally
                 {
                     SetButtonCancelToSync();
+                    ClearProgressBar();
                 }
                 m_cancelSource.Dispose();
                 m_cancelSource = null;
@@ -262,7 +288,7 @@ namespace aTunesSync
             m_mainViewModel.Log.Value += addLog + "\n";
         }
 
-        #region Enable
+        #region WPF
         private void SetAllButtonEnable(bool enable)
         {
             m_mainViewModel.AndroidDeviceEnable.Value = enable;
@@ -283,6 +309,13 @@ namespace aTunesSync
         {
             SetAllButtonEnable(true);
             m_mainViewModel.SyncButtonText.Value = "Sync";
+            m_mainViewModel.SyncButtonEnable.Value = false;
+        }
+
+        private void ClearProgressBar()
+        {
+            m_mainViewModel.ProgressBarText.Value = "";
+            m_mainViewModel.ProgressBarValue.Value = 0;
         }
         #endregion
 

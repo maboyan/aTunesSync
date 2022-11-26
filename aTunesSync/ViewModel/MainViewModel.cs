@@ -21,6 +21,9 @@ namespace aTunesSync.ViewModel
         public ReactiveProperty<bool> CheckButtonEnable { get; set; } = new ReactiveProperty<bool>(true);
         public ReactiveProperty<bool> SyncButtonEnable { get; set; } = new ReactiveProperty<bool>(false); // syncはcheckをしないとtrueにならない
 
+        public ReactiveProperty<string> ProgressBarText { get; set; } = new ReactiveProperty<string>("");
+        public ReactiveProperty<int> ProgressBarValue { get; set; } = new ReactiveProperty<int>(0);
+
         public ReactiveCollection<SyncContent> SyncContentList { get; set; } = new ReactiveCollection<SyncContent>();
 
         public ReactiveProperty<string> Log { get; set; } = new ReactiveProperty<string>("");
