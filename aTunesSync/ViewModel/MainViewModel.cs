@@ -18,6 +18,8 @@ namespace aTunesSync.ViewModel
         public ReactiveProperty<bool> AndroidDeviceEnable { get; set; } = new ReactiveProperty<bool>(true);
         public ReactiveProperty<bool> WindowsRootEnable { get; set; } = new ReactiveProperty<bool>(true);
         public ReactiveProperty<bool> WindowsRootDialogEnable { get; set; } = new ReactiveProperty<bool>(true);
+        public ReactiveProperty<bool> iTunesLibraryEnable { get; set; } = new ReactiveProperty<bool>(true);
+        public ReactiveProperty<bool> iTunesLibraryDialogEnable { get; set; } = new ReactiveProperty<bool>(true);
         public ReactiveProperty<bool> CheckButtonEnable { get; set; } = new ReactiveProperty<bool>(true);
         public ReactiveProperty<bool> SyncButtonEnable { get; set; } = new ReactiveProperty<bool>(false); // syncはcheckをしないとtrueにならない
 

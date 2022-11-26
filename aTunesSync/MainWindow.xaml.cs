@@ -44,7 +44,6 @@ namespace aTunesSync
         private async void CheckButton_Click(object sender, RoutedEventArgs e)
         {
             await CheckAsync();
-            SaveSettings();
         }
 
         public  async Task CheckAsync()
@@ -270,6 +269,24 @@ namespace aTunesSync
             if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
             {
                 m_mainViewModel.WindowsRootDirectory.Value = dlg.FileName;
+                SaveSettings();
+            }
+        }
+        #endregion
+
+        #region iTunes Library Button
+        private void iTunesLibraryButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new CommonOpenFileDialog();
+            dlg.DefaultFileName = "iTunes Music Library.xml";
+            dlg.Filters.Add(new CommonFileDialogFilter("iTunesライブラリファイル(*.xml)", ".xml"));
+            if (!string.IsNullOrWhiteSpace(m_mainViewModel.iTunesLibraryPath.Value) && System.IO.Directory.Exists(m_mainViewModel.iTunesLibraryPath.Value))
+                dlg.InitialDirectory = m_mainViewModel.iTunesLibraryPath.Value;
+
+            if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                m_mainViewModel.iTunesLibraryPath.Value = dlg.FileName;
+                SaveSettings();
             }
         }
         #endregion
@@ -294,6 +311,8 @@ namespace aTunesSync
             m_mainViewModel.AndroidDeviceEnable.Value = enable;
             m_mainViewModel.WindowsRootEnable.Value = enable;
             m_mainViewModel.WindowsRootDialogEnable.Value = enable;
+            m_mainViewModel.iTunesLibraryEnable.Value = enable;
+            m_mainViewModel.iTunesLibraryDialogEnable.Value = enable;
             m_mainViewModel.CheckButtonEnable.Value = enable;
             m_mainViewModel.SyncButtonEnable.Value = enable;
         }
@@ -327,5 +346,7 @@ namespace aTunesSync
 
             textbox.ScrollToEnd();
         }
+
+        
     }
 }

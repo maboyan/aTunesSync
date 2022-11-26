@@ -25,7 +25,7 @@
                 <TextBox Margin="5 0 5 0" Text="{Binding AndroidDeviceName.Value}" IsEnabled="{Binding AndroidDeviceEnable.Value}" />
 
                 <Label>Windowsサウンドディレクトリ</Label>
-                <Grid Margin="5 0 5 10">
+                <Grid Margin="5 0 5 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -33,6 +33,17 @@
 
                     <TextBox Grid.Column="0" Margin="0 0 10 0" Text="{Binding WindowsRootDirectory.Value}" IsEnabled="{Binding WindowsRootEnable.Value}" />
                     <Button Grid.Column="1" Width="50" Content="参照" Click="WindowsRootButton_Click" IsEnabled="{Binding WindowsRootDialogEnable.Value}" />
+                </Grid>
+
+                <Label>iTunesライブラリファイル</Label>
+                <Grid Margin="5 0 5 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox Grid.Column="0" Margin="0 0 10 0" Text="{Binding iTunesLibraryPath.Value}" IsEnabled="{Binding iTunesLibraryEnable.Value}" />
+                    <Button Grid.Column="1" Width="50" Content="参照" Click="iTunesLibraryButton_Click" IsEnabled="{Binding iTunesLibraryDialogEnable.Value}" />
                 </Grid>
 
             </StackPanel>
