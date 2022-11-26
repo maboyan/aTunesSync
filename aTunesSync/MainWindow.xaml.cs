@@ -13,13 +13,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Threading;
 
 using Microsoft.WindowsAPICodePack.Dialogs;
 using aTunesSync.File;
 using aTunesSync.File.Android;
 using aTunesSync.File.Windows;
 using aTunesSync.ViewModel;
-using System.Security.Cryptography.X509Certificates;
 
 namespace aTunesSync
 {
@@ -29,6 +29,8 @@ namespace aTunesSync
     public partial class MainWindow : Window
     {
         private MainViewModel m_mainViewModel = new MainViewModel();
+        private FileSyncContent m_fileSync = null;
+        private CancellationTokenSource m_cancelSource = null;
 
         public MainWindow()
         {
@@ -38,15 +40,11 @@ namespace aTunesSync
             LoadSettings();
         }
 
-        #region Check Sync Button
+        #region Check Button
         private async void CheckButton_Click(object sender, RoutedEventArgs e)
         {
             await CheckAsync();
             SaveSettings();
-        }
-
-        private async void SyncButton_Click(object sender, RoutedEventArgs e)
-        {
         }
 
         public  async Task CheckAsync()
@@ -65,9 +63,9 @@ namespace aTunesSync
                 var windowsFiles = await GetWindowsFilesAsync(m_mainViewModel.WindowsRootDirectory.Value);
 
                 var sync = new FileSync();
-                var content = await sync.CheckAsync(device, androidFiles, windowsFiles);
+                m_fileSync = await sync.CheckAsync(device, androidFiles, windowsFiles);
                 m_mainViewModel.SyncContentList.Clear();
-                foreach(var deleteItem in content.AndroidOnlySet)
+                foreach(var deleteItem in m_fileSync.AndroidOnlySet)
                 {
                     m_mainViewModel.SyncContentList.Add(new SyncContent()
                     {
@@ -76,7 +74,7 @@ namespace aTunesSync
                         Path = deleteItem.FullPath
                     });
                 }
-                foreach (var addItem in content.WindowsOnlySet)
+                foreach (var addItem in m_fileSync.WindowsOnlySet)
                 {
                     m_mainViewModel.SyncContentList.Add(new SyncContent()
                     {
@@ -114,6 +112,43 @@ namespace aTunesSync
             });
             
             return result;
+        }
+        #endregion
+
+        #region Sync Bottun
+        private async void SyncButton_Click(object sender, RoutedEventArgs e)
+        {
+            await SyncAsync();
+        }
+
+        private async Task SyncAsync()
+        {
+            AddLog("Start SyncAsync");
+            if (m_fileSync == null)
+            {
+                AddLog("No Update");
+                return;
+            }
+
+
+            var mng = new AndroidFileManager();
+            using (var device = mng.SearchDevice(m_mainViewModel.AndroidDeviceName.Value))
+            {
+                if (device == null)
+                {
+                    AddLog($"{m_mainViewModel.AndroidDeviceName.Value} Not Found");
+                    return;
+                }
+
+                m_cancelSource = new CancellationTokenSource();
+
+                var sync = new FileSync();
+                sync.MessageEvent += (str) => { AddLog(str); };
+                await sync.SyncAsync(device, m_fileSync, m_cancelSource.Token);
+                m_cancelSource = null;
+            }
+
+            AddLog("End SyncAsync");
         }
         #endregion
 
