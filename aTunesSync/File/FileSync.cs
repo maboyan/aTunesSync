@@ -71,7 +71,10 @@ namespace aTunesSync.File
                     foreach (var item in content.AndroidOnlySet)
                     {
                         if (token.IsCancellationRequested)
-                            token.ThrowIfCancellationRequested();
+                        {
+                            MessageEvent($"Cancel Delete");
+                            return;
+                        }
 
                         var androidItem = item as AndroidFile;
                         if (androidItem == null)
@@ -88,20 +91,29 @@ namespace aTunesSync.File
                     foreach (var item in content.WindowsOnlySet)
                     {
                         if (token.IsCancellationRequested)
-                            token.ThrowIfCancellationRequested();
+                        {
+                            MessageEvent($"Cancel Copy");
+                            return;
+                        }
 
                         var windowsItem = item as WindowsFile;
                         if (windowsItem == null)
                             continue;
 
                         MessageEvent($"[COPY] {windowsItem}");
-                        device.Copy(windowsItem);
+                        try
+                        {
+                            device.Copy(windowsItem);
+                        }
+                        catch (Exception e)
+                        {
+                            MessageEvent($"[SKIP] {windowsItem} {e.Message}");
+                        }
                     }
                 }
 
                 // android側から空のディレクトリを消したほうがきれいになりそう
-
-            }, token);
+            });
         }
     }
 }

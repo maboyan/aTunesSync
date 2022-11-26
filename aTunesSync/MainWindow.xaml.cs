@@ -49,7 +49,7 @@ namespace aTunesSync
 
         public  async Task CheckAsync()
         {
-            AddLog("Start CheckAsync");
+            AddLog("Start Check");
             var mng = new AndroidFileManager();
             using (var device = mng.SearchDevice(m_mainViewModel.AndroidDeviceName.Value))
             {
@@ -59,32 +59,46 @@ namespace aTunesSync
                     return;
                 }
 
-                var androidFiles = await GetAndroidFilesAsync(device);
-                var windowsFiles = await GetWindowsFilesAsync(m_mainViewModel.WindowsRootDirectory.Value);
+                try
+                {
+                    SetAllButtonEnable(false);
 
-                var sync = new FileSync();
-                m_fileSync = await sync.CheckAsync(device, androidFiles, windowsFiles);
-                m_mainViewModel.SyncContentList.Clear();
-                foreach(var deleteItem in m_fileSync.AndroidOnlySet)
-                {
-                    m_mainViewModel.SyncContentList.Add(new SyncContent()
+                    var androidFiles = await GetAndroidFilesAsync(device);
+                    var windowsFiles = await GetWindowsFilesAsync(m_mainViewModel.WindowsRootDirectory.Value);
+
+                    var sync = new FileSync();
+                    m_fileSync = await sync.CheckAsync(device, androidFiles, windowsFiles);
+                    m_mainViewModel.SyncContentList.Clear();
+                    foreach (var deleteItem in m_fileSync.AndroidOnlySet)
                     {
-                        Category = "Delete",
-                        Name = deleteItem.Name,
-                        Path = deleteItem.FullPath
-                    });
-                }
-                foreach (var addItem in m_fileSync.WindowsOnlySet)
-                {
-                    m_mainViewModel.SyncContentList.Add(new SyncContent()
+                        m_mainViewModel.SyncContentList.Add(new SyncContent()
+                        {
+                            Category = "Delete",
+                            Name = deleteItem.Name,
+                            Path = deleteItem.FullPath
+                        });
+                    }
+                    foreach (var addItem in m_fileSync.WindowsOnlySet)
                     {
-                        Category = "Copy",
-                        Name = addItem.Name,
-                        Path = addItem.FullPath
-                    });
+                        m_mainViewModel.SyncContentList.Add(new SyncContent()
+                        {
+                            Category = "Copy",
+                            Name = addItem.Name,
+                            Path = addItem.FullPath
+                        });
+                    }
                 }
+                catch (Exception e)
+                {
+                    AddLog(e.ToString());
+                }
+                finally
+                {
+                    SetAllButtonEnable(true);
+                }
+
             }
-            AddLog("End CheckAsync");
+            AddLog("End Check");
         }
 
         private async Task<SortedSet<FileBase>> GetAndroidFilesAsync(AndroidDevice device)
@@ -98,7 +112,6 @@ namespace aTunesSync
             });
 
             return result;
-
         }
 
         private async Task<SortedSet<FileBase>> GetWindowsFilesAsync(string root)
@@ -118,12 +131,21 @@ namespace aTunesSync
         #region Sync Bottun
         private async void SyncButton_Click(object sender, RoutedEventArgs e)
         {
+            // キャンセルボタンになっている模様
+            // ちゃんと判定したほうがいいけど面倒なのでこの程度の判定
+            if (m_cancelSource != null)
+            {
+                AddLog("Request Cancel Sync");
+                m_cancelSource.Cancel();
+                return;
+            }
+
             await SyncAsync();
         }
 
         private async Task SyncAsync()
         {
-            AddLog("Start SyncAsync");
+            AddLog("Start Sync");
             if (m_fileSync == null)
             {
                 AddLog("No Update");
@@ -144,11 +166,29 @@ namespace aTunesSync
 
                 var sync = new FileSync();
                 sync.MessageEvent += (str) => { AddLog(str); };
-                await sync.SyncAsync(device, m_fileSync, m_cancelSource.Token);
+                try
+                {
+                    SetButtonSyncToCancel();
+                    device.Initialize();
+                    await sync.SyncAsync(device, m_fileSync, m_cancelSource.Token);
+                }
+                catch(MusicDirectoryNotFoundException)
+                {
+                    AddLog("Music Directory Not Found");
+                }
+                catch(Exception e)
+                {
+                    AddLog(e.ToString());
+                }
+                finally
+                {
+                    SetButtonCancelToSync();
+                }
+                m_cancelSource.Dispose();
                 m_cancelSource = null;
             }
 
-            AddLog("End SyncAsync");
+            AddLog("End Sync");
         }
         #endregion
 
@@ -220,6 +260,39 @@ namespace aTunesSync
                 addLog = $"{now} {log}";
             }
             m_mainViewModel.Log.Value += addLog + "\n";
+        }
+
+        #region Enable
+        private void SetAllButtonEnable(bool enable)
+        {
+            m_mainViewModel.AndroidDeviceEnable.Value = enable;
+            m_mainViewModel.WindowsRootEnable.Value = enable;
+            m_mainViewModel.WindowsRootDialogEnable.Value = enable;
+            m_mainViewModel.CheckButtonEnable.Value = enable;
+            m_mainViewModel.SyncButtonEnable.Value = enable;
+        }
+
+        private void SetButtonSyncToCancel()
+        {
+            SetAllButtonEnable(false);
+            m_mainViewModel.SyncButtonText.Value = "Cancel";
+            m_mainViewModel.SyncButtonEnable.Value = true;
+        }
+
+        private void SetButtonCancelToSync()
+        {
+            SetAllButtonEnable(true);
+            m_mainViewModel.SyncButtonText.Value = "Sync";
+        }
+        #endregion
+
+        private void LogTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var textbox = sender as TextBox;
+            if (textbox == null)
+                return;
+
+            textbox.ScrollToEnd();
         }
     }
 }

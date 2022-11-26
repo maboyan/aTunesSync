@@ -55,7 +55,7 @@ namespace aTunesSync.File.Android
             if (lastIndex < 0)
                 throw new InvalidOperationException();
 
-            var result = path.Substring(lastIndex);
+            var result = path.Substring(0, lastIndex);
             return result;
         }
 
