@@ -22,7 +22,7 @@
             
             <StackPanel Grid.Row="0">
                 <Label>Androidデバイス名</Label>
-                <TextBox Margin="5 0 5 0" Text="{Binding AndroidDeviceName.Value}" />
+                <TextBox Margin="5 0 5 0" Text="{Binding AndroidDeviceName.Value}" IsEnabled="{Binding AndroidDeviceEnable.Value}" />
 
                 <Label>Windowsサウンドディレクトリ</Label>
                 <Grid Margin="5 0 5 10">
@@ -31,8 +31,8 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBox Grid.Column="0" Margin="0 0 10 0" Text="{Binding WindowsRootDirectory.Value}" />
-                    <Button Grid.Column="1" Width="50" Content="参照" Click="WindowsRootButton_Click" />
+                    <TextBox Grid.Column="0" Margin="0 0 10 0" Text="{Binding WindowsRootDirectory.Value}" IsEnabled="{Binding WindowsRootEnable.Value}" />
+                    <Button Grid.Column="1" Width="50" Content="参照" Click="WindowsRootButton_Click" IsEnabled="{Binding WindowsRootDialogEnable.Value}" />
                 </Grid>
 
             </StackPanel>
@@ -53,13 +53,13 @@
                 </ListView.View>
             </ListView>
 
-            <Button Grid.Row="2" Margin="0 5 70 5" HorizontalAlignment="Right" Click="CheckButton_Click" Width="50" Content="Check" />
-            <Button Grid.Row="2" Margin="0 5 5 5" HorizontalAlignment="Right" Click="SyncButton_Click" Width="50" Content="Sync" />
+            <Button Grid.Row="2" Margin="0 5 70 5" HorizontalAlignment="Right" Click="CheckButton_Click" Width="50" Content="Check" IsEnabled="{Binding CheckButtonEnable.Value}" />
+            <Button Grid.Row="2" Margin="0 5 5 5" HorizontalAlignment="Right" Click="SyncButton_Click" Width="50" Content="{Binding SyncButtonText.Value}" IsEnabled="{Binding SyncButtonEnable.Value}" />
         </Grid><!-- Left -->
 
         <!-- Right -->
         <Grid Grid.Column="1">
-            <TextBlock Text="{Binding Log.Value}" />
+            <TextBox AcceptsReturn="True" IsReadOnly="True" TextWrapping="Wrap" Text="{Binding Log.Value}" ScrollViewer.VerticalScrollBarVisibility="Visible" TextChanged="LogTextBox_TextChanged" />
         </Grid><!-- Right -->
 
     </Grid>

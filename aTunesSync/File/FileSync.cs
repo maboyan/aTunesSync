@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using aTunesSync.File.Android;
@@ -52,8 +53,9 @@ namespace aTunesSync.File
         /// </summary>
         /// <param name="device"></param>
         /// <param name="content"></param>
+        /// <param name="token"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public async void SyncAsync(AndroidDevice device, FileSyncContent content)
+        public async Task SyncAsync(AndroidDevice device, FileSyncContent content, CancellationToken token)
         {
             if (device == null)
                 throw new ArgumentNullException(nameof(device));
@@ -68,6 +70,12 @@ namespace aTunesSync.File
                 {
                     foreach (var item in content.AndroidOnlySet)
                     {
+                        if (token.IsCancellationRequested)
+                        {
+                            MessageEvent($"Cancel Delete");
+                            return;
+                        }
+
                         var androidItem = item as AndroidFile;
                         if (androidItem == null)
                             continue;
@@ -82,17 +90,29 @@ namespace aTunesSync.File
                 {
                     foreach (var item in content.WindowsOnlySet)
                     {
+                        if (token.IsCancellationRequested)
+                        {
+                            MessageEvent($"Cancel Copy");
+                            return;
+                        }
+
                         var windowsItem = item as WindowsFile;
                         if (windowsItem == null)
                             continue;
 
                         MessageEvent($"[COPY] {windowsItem}");
-                        device.Copy(windowsItem);
+                        try
+                        {
+                            device.Copy(windowsItem);
+                        }
+                        catch (Exception e)
+                        {
+                            MessageEvent($"[SKIP] {windowsItem} {e.Message}");
+                        }
                     }
                 }
 
                 // android側から空のディレクトリを消したほうがきれいになりそう
-
             });
         }
     }
