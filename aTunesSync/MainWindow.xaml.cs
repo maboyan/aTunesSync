@@ -63,6 +63,11 @@ namespace aTunesSync
                 {
                     SetAllButtonEnable(false);
 
+                    AddLog("Create iTunes Playlist");
+                    var itunes = new iTunesParser(m_mainViewModel.iTunesLibraryPath.Value);
+                    var playlist = await itunes.ParseAsync();
+                    playlist.SaveM3u8(m_mainViewModel.WindowsRootDirectory.Value, m_mainViewModel.PlaylistDirectoryName.Value);
+
                     AddLog("Get Android File List");
                     var androidFiles = await GetAndroidFilesAsync(device);
                     AddLog("Get Windows File List");
@@ -89,7 +94,7 @@ namespace aTunesSync
                             Name = addItem.Name,
                             Path = addItem.FullPath
                         });
-                    }
+                    }                    
                 }
                 catch (Exception e)
                 {
@@ -294,12 +299,6 @@ namespace aTunesSync
             {
                 m_mainViewModel.iTunesLibraryPath.Value = dlg.FileName;
                 SaveSettings();
-
-                // test
-                AddLog("Create iTunes Playlist");
-                var itunes = new iTunesParser(m_mainViewModel.iTunesLibraryPath.Value);
-                var playlist = itunes.Parse();
-                playlist.SaveM3u8(m_mainViewModel.WindowsRootDirectory.Value, m_mainViewModel.PlaylistDirectoryName.Value);
             }
         }
         #endregion

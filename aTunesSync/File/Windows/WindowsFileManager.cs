@@ -22,7 +22,7 @@ namespace aTunesSync.File.Windows
         public event ProgressEventHandler GetMusicFilesProgressEvent;
 
         /// <summary>
-        /// 引数rootの中からmp3, m4aファイルを探す
+        /// 引数rootの中からmp3, m4a, m3u8ファイルを探す
         /// </summary>
         /// <param name="root"></param>
         /// <returns></returns>
@@ -32,7 +32,8 @@ namespace aTunesSync.File.Windows
 
             var mp3List = Directory.GetFiles(root, "*.mp3", SearchOption.AllDirectories);
             var m4aList = Directory.GetFiles(root, "*.m4a", SearchOption.AllDirectories);
-            var sum = mp3List.Count() + m4aList.Count();
+            var m3u8List = Directory.GetFiles(root, "*.m3u8", SearchOption.AllDirectories);
+            var sum = mp3List.Count() + m4aList.Count() + m3u8List.Count();
             var now = 0;
 
             foreach (var mp3 in mp3List)
@@ -48,6 +49,16 @@ namespace aTunesSync.File.Windows
             foreach (var m4a in m4aList)
             {
                 var info = new FileInfo(m4a);
+                var item = new WindowsFile(info, root);
+                result.Add(item);
+
+                ++now;
+                GetMusicFilesProgressEvent(now, sum);
+            }
+
+            foreach (var m3u8 in m3u8List)
+            {
+                var info = new FileInfo(m3u8);
                 var item = new WindowsFile(info, root);
                 result.Add(item);
 

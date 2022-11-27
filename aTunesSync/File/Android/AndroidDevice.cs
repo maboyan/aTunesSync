@@ -85,7 +85,7 @@ namespace aTunesSync.File.Android
 
         #region Files
         /// <summary>
-        /// GetMusicDirectoryで取得したrootからmp3, m4aファイルを探す
+        /// GetMusicDirectoryで取得したrootからmp3, m4a, m3u8ファイルを探す
         /// </summary>
         /// <param name="root"></param>
         /// <returns></returns>
@@ -99,7 +99,8 @@ namespace aTunesSync.File.Android
 
             var mp3List = Device.GetFileSystemEntries(root, "*.mp3", System.IO.SearchOption.AllDirectories);
             var m4aList = Device.GetFileSystemEntries(root, "*.m4a", System.IO.SearchOption.AllDirectories);
-            var sum = mp3List.Count() + m4aList.Count();
+            var m3u8List = Device.GetFileSystemEntries(root, "*.m3u8", System.IO.SearchOption.AllDirectories);
+            var sum = mp3List.Count() + m4aList.Count() + m3u8List.Count();
             var now = 0;
 
             foreach (var mp3 in mp3List)
@@ -115,6 +116,16 @@ namespace aTunesSync.File.Android
             foreach (var m4a in m4aList)
             {
                 var info = Device.GetFileInfo(m4a);
+                var item = new AndroidFile(info, root);
+                result.Add(item);
+
+                ++now;
+                GetMusicFilesProgressEvent(now, sum);
+            }
+
+            foreach (var m3u8 in m3u8List)
+            {
+                var info = Device.GetFileInfo(m3u8);
                 var item = new AndroidFile(info, root);
                 result.Add(item);
 
