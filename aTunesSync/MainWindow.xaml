@@ -36,7 +36,7 @@
                 </Grid>
 
                 <Label>iTunesライブラリファイル</Label>
-                <Grid Margin="5 0 5 5">
+                <Grid Margin="5 0 5 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -45,6 +45,9 @@
                     <TextBox Grid.Column="0" Margin="0 0 10 0" Text="{Binding iTunesLibraryPath.Value}" IsEnabled="{Binding iTunesLibraryEnable.Value}" />
                     <Button Grid.Column="1" Width="50" Content="参照" Click="iTunesLibraryButton_Click" IsEnabled="{Binding iTunesLibraryDialogEnable.Value}" />
                 </Grid>
+
+                <Label>プレイリストディレクトリ名</Label>
+                <TextBox Margin="5 0 5 5" Text="{Binding PlaylistDirectoryName.Value}" IsEnabled="{Binding PlaylistDirectoryEnable.Value}" />
 
             </StackPanel>
 
@@ -76,7 +79,7 @@
                     <TextBlock Text="{Binding ProgressBarText.Value}" HorizontalAlignment="Center" VerticalAlignment="Center" />
 
                 </Grid>
-                <Button Grid.Column="1" Margin="5 5 5 5" HorizontalAlignment="Right" Click="CheckButton_Click" Width="50" Content="Check" IsEnabled="{Binding CheckButtonEnable.Value}" />
+                <Button Grid.Column="1" Margin="5 5 5 5" HorizontalAlignment="Right" Click="CheckButton_Click" Width="50" Content="Prepare" IsEnabled="{Binding CheckButtonEnable.Value}" />
                 <Button Grid.Column="2" Margin="5 5 5 5" HorizontalAlignment="Right" Click="SyncButton_Click" Width="50" Content="{Binding SyncButtonText.Value}" IsEnabled="{Binding SyncButtonEnable.Value}" />
             </Grid>
             

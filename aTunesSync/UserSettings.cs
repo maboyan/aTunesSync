@@ -14,12 +14,14 @@ namespace aTunesSync
         public string AndroidDeviceName { get; set; }
         public string WindowsRootDirectory { get; set; }
         public string iTunesLibraryFile { get; set; }
+        public string PlaylistDirectoryName { get; set; }
 
         private void Copy(UserSettings obj)
         {
             AndroidDeviceName = obj.AndroidDeviceName;
             WindowsRootDirectory = obj.WindowsRootDirectory;
             iTunesLibraryFile = obj.iTunesLibraryFile;
+            PlaylistDirectoryName = obj.PlaylistDirectoryName;
         }
 
         public void Save(string path)

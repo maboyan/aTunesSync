@@ -20,6 +20,7 @@ using aTunesSync.File;
 using aTunesSync.File.Android;
 using aTunesSync.File.Windows;
 using aTunesSync.ViewModel;
+using aTunesSync.iTunes;
 
 namespace aTunesSync
 {
@@ -48,7 +49,7 @@ namespace aTunesSync
 
         public  async Task CheckAsync()
         {
-            AddLog("Start Check");
+            AddLog("Start Prepare");
             var mng = new AndroidFileManager();
             using (var device = mng.SearchDevice(m_mainViewModel.AndroidDeviceName.Value))
             {
@@ -67,8 +68,8 @@ namespace aTunesSync
                     AddLog("Get Windows File List");
                     var windowsFiles = await GetWindowsFilesAsync(m_mainViewModel.WindowsRootDirectory.Value);
 
-                    var sync = new FileSync();
                     AddLog("Create Sync Content");
+                    var sync = new FileSync();
                     m_fileSync = await sync.CheckAsync(device, androidFiles, windowsFiles);
                     m_mainViewModel.SyncContentList.Clear();
                     foreach (var deleteItem in m_fileSync.AndroidOnlySet)
@@ -101,7 +102,7 @@ namespace aTunesSync
                 }
 
             }
-            AddLog("End Check");
+            AddLog("End Prepare");
         }
 
         private async Task<SortedSet<FileBase>> GetAndroidFilesAsync(AndroidDevice device)
@@ -227,6 +228,7 @@ namespace aTunesSync
                 AndroidDeviceName = m_mainViewModel.AndroidDeviceName.Value,
                 WindowsRootDirectory = m_mainViewModel.WindowsRootDirectory.Value,
                 iTunesLibraryFile = m_mainViewModel.iTunesLibraryPath.Value,
+                PlaylistDirectoryName = m_mainViewModel.PlaylistDirectoryName.Value,
             };
 
             settings.Save(path);
@@ -240,10 +242,15 @@ namespace aTunesSync
 
             var settings = new UserSettings();
             settings.Load(path);
-
-            m_mainViewModel.AndroidDeviceName.Value = settings.AndroidDeviceName;
-            m_mainViewModel.WindowsRootDirectory.Value = settings.WindowsRootDirectory;
-            m_mainViewModel.iTunesLibraryPath.Value = settings.iTunesLibraryFile;
+            
+            if (!string.IsNullOrWhiteSpace(settings.AndroidDeviceName))
+                m_mainViewModel.AndroidDeviceName.Value = settings.AndroidDeviceName;
+            if (!string.IsNullOrWhiteSpace(settings.WindowsRootDirectory))
+                m_mainViewModel.WindowsRootDirectory.Value = settings.WindowsRootDirectory;
+            if (!string.IsNullOrWhiteSpace(settings.iTunesLibraryFile))
+                m_mainViewModel.iTunesLibraryPath.Value = settings.iTunesLibraryFile;
+            if (!string.IsNullOrWhiteSpace(settings.PlaylistDirectoryName))
+                m_mainViewModel.PlaylistDirectoryName.Value = settings.PlaylistDirectoryName;
         }
 
         private static readonly string SETTING_JSON_NAME = "settings.json";
@@ -278,7 +285,7 @@ namespace aTunesSync
         private void iTunesLibraryButton_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new CommonOpenFileDialog();
-            dlg.DefaultFileName = "iTunes Music Library.xml";
+            dlg.DefaultFileName = "iTunes Library.xml";
             dlg.Filters.Add(new CommonFileDialogFilter("iTunesライブラリファイル(*.xml)", ".xml"));
             if (!string.IsNullOrWhiteSpace(m_mainViewModel.iTunesLibraryPath.Value) && System.IO.Directory.Exists(m_mainViewModel.iTunesLibraryPath.Value))
                 dlg.InitialDirectory = m_mainViewModel.iTunesLibraryPath.Value;
@@ -287,6 +294,12 @@ namespace aTunesSync
             {
                 m_mainViewModel.iTunesLibraryPath.Value = dlg.FileName;
                 SaveSettings();
+
+                // test
+                AddLog("Create iTunes Playlist");
+                var itunes = new iTunesParser(m_mainViewModel.iTunesLibraryPath.Value);
+                var playlist = itunes.Parse();
+                playlist.SaveM3u8(m_mainViewModel.WindowsRootDirectory.Value, m_mainViewModel.PlaylistDirectoryName.Value);
             }
         }
         #endregion
@@ -313,6 +326,7 @@ namespace aTunesSync
             m_mainViewModel.WindowsRootDialogEnable.Value = enable;
             m_mainViewModel.iTunesLibraryEnable.Value = enable;
             m_mainViewModel.iTunesLibraryDialogEnable.Value = enable;
+            m_mainViewModel.PlaylistDirectoryEnable.Value = enable;
             m_mainViewModel.CheckButtonEnable.Value = enable;
             m_mainViewModel.SyncButtonEnable.Value = enable;
         }
