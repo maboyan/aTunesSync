@@ -13,14 +13,14 @@ namespace aTunesSync.File.Android
         : IDisposable
     {
         /// <summary>
-        /// メソッド呼び出し中のログ
+        /// メッセージログイベント
         /// </summary>
-        public event MessageEventHandler MessageEvent;
+        public event MessageEventHandler MessageEvent = delegate { };
 
         /// <summary>
-        /// GetMusicFilesの進捗
+        /// GetMusicFilesの進捗イベント
         /// </summary>
-        public event ProgressEventHandler GetMusicFilesProgressEvent;
+        public event ProgressEventHandler GetMusicFilesProgressEvent = delegate { };
 
         /// <summary>
         /// デバイス操作ハンドル

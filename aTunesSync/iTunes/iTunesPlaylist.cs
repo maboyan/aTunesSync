@@ -11,17 +11,60 @@ namespace aTunesSync.iTunes
     [System.Diagnostics.DebuggerDisplay("{Name} {Id}")]
     internal class iTunesPlaylist
     {
+        /// <summary>
+        /// ログイベント
+        /// </summary>
+        public event MessageEventHandler MessageEvent = delegate { };
+
+        /// <summary>
+        /// rootかどうか？
+        /// 「ライブラリ」や「ダウンロード済み」は親がいないので
+        /// 扱いやすいように仮想的にrootという空のプレイリストを作っている
+        /// </summary>
         public bool IsRoot { get; private set; }
 
         public string Id { get; private set; }
+
+        /// <summary>
+        /// プレイリスト名
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// プレイリストの親
+        /// プレイリストはライブラリの下につくので親がいるはず
+        /// </summary>
         public iTunesPlaylist Parent { get; private set; }
+
+        /// <summary>
+        /// フォルダかどうか
+        /// </summary>
         public bool IsFolder { get; private set; }
+
+        /// <summary>
+        /// ユーザー設定で見えないようになっているか
+        /// </summary>
         public bool IsVisible { get; private set; }
+
+        /// <summary>
+        /// 含まれている楽曲たち
+        /// </summary>
         public List<iTunesMusic> Musics { get; private set; }
 
+        /// <summary>
+        /// 子要素
+        /// </summary>
         public List<iTunesPlaylist> Children { get; private set; }
 
+        /// <summary>
+        /// 普通のコンストラクタ
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="name"></param>
+        /// <param name="parent"></param>
+        /// <param name="isFolder"></param>
+        /// <param name="visible"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public iTunesPlaylist(string id, string name, iTunesPlaylist parent, bool isFolder, bool visible)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -100,12 +143,32 @@ namespace aTunesSync.iTunes
             Children.Remove(item);
         }
 
+        private static readonly string PLAYLIST_EXTENSION = "m3u8";
+
         /// <summary>
         /// プレイリストを引数の場所に保存する
         /// </summary>
         /// <param name="baseDir"></param>
         /// <param name="playlistDir"></param>
         public void SaveM3u8(string baseDir, string playlistDir)
+        {
+            // 自分と子供のプレイリストを保存
+            var savedList = new List<string>();
+            SaveM3u8Core(baseDir, playlistDir, ref savedList);
+
+            // 現在のBaseDirに存在するplaylistファイルを取得
+            var currentList = System.IO.Directory.GetFiles(baseDir, $"*.{PLAYLIST_EXTENSION}", SearchOption.AllDirectories);
+
+            // current - saved = 最初から存在しないファイル = プレイリストから消されたファイル
+            var diffList = currentList.Except(savedList);
+            foreach (var item in diffList)
+            {
+                MessageEvent($"[DELETE] {item}");
+                System.IO.File.Delete(item);
+            }
+        }
+
+        private void SaveM3u8Core(string baseDir, string playlistDir, ref List<string> savedPaths)
         {
             if (!System.IO.Directory.Exists(baseDir))
                 throw new System.IO.DirectoryNotFoundException();
@@ -118,14 +181,16 @@ namespace aTunesSync.iTunes
                 var lines = CreatePlaylistContent(baseDir);
                 if (lines != null)
                 {
+                    MessageEvent($"[CREATE] {path}");
                     System.IO.File.WriteAllLines(path, lines, Encoding.UTF8);
+                    savedPaths.Add(path);
                 }
             }
 
             // 子供も作る
-            foreach(var child in Children)
+            foreach (var child in Children)
             {
-                child.SaveM3u8(baseDir, playlistDir);
+                child.SaveM3u8Core(baseDir, playlistDir,ref savedPaths);
             }
         }
 
@@ -134,7 +199,7 @@ namespace aTunesSync.iTunes
         {
             // ルートまで親の名前を調べる
             var tree = new List<string>();
-            tree.Add($"{Name}.m3u8");
+            tree.Add($"{Name}.{PLAYLIST_EXTENSION}");
             var parent = Parent;
             while(parent != null)
             {
