@@ -245,7 +245,7 @@ namespace aTunesSync.iTunes
             foreach(var music in Musics)
             {
                 if (!music.Path.StartsWith(baseDir))
-                    throw new InvalidOperationException("file path belongs to root");
+                    throw new InvalidOperationException($"file path belongs to root {music.Path}");
                 var relativePath = music.Path.Substring(baseDir.Length);
                 var androidPath = ANDROID_ROOT_PATH + relativePath;
                 var addPath = androidPath.Replace('\\', '/');
