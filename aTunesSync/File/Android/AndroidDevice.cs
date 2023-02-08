@@ -99,7 +99,7 @@ namespace aTunesSync.File.Android
 
             var mp3List = Device.GetFileSystemEntries(root, "*.mp3", System.IO.SearchOption.AllDirectories);
             var m4aList = Device.GetFileSystemEntries(root, "*.m4a", System.IO.SearchOption.AllDirectories);
-            var m3u8List = Device.GetFileSystemEntries(root, "*.m3u8", System.IO.SearchOption.AllDirectories);
+            var m3u8List = Device.GetFileSystemEntries(root, "*.m3u", System.IO.SearchOption.AllDirectories);
             var sum = mp3List.Count() + m4aList.Count() + m3u8List.Count();
             var now = 0;
 

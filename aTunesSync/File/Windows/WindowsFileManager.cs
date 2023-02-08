@@ -32,7 +32,7 @@ namespace aTunesSync.File.Windows
 
             var mp3List = Directory.GetFiles(root, "*.mp3", SearchOption.AllDirectories);
             var m4aList = Directory.GetFiles(root, "*.m4a", SearchOption.AllDirectories);
-            var m3u8List = Directory.GetFiles(root, "*.m3u8", SearchOption.AllDirectories);
+            var m3u8List = Directory.GetFiles(root, "*.m3u", SearchOption.AllDirectories);
             var sum = mp3List.Count() + m4aList.Count() + m3u8List.Count();
             var now = 0;
 

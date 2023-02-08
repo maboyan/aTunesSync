@@ -12,6 +12,11 @@ namespace aTunesSync.iTunes
     internal class iTunesPlaylist
     {
         /// <summary>
+        /// 作成するプレイリスト拡張子
+        /// </summary>
+        public static readonly string PLAYLIST_EXTENSION = "m3u";
+
+        /// <summary>
         /// ログイベント
         /// </summary>
         public event MessageEventHandler MessageEvent = delegate { };
@@ -143,18 +148,16 @@ namespace aTunesSync.iTunes
             Children.Remove(item);
         }
 
-        private static readonly string PLAYLIST_EXTENSION = "m3u8";
-
         /// <summary>
         /// プレイリストを引数の場所に保存する
         /// </summary>
         /// <param name="baseDir"></param>
         /// <param name="playlistDir"></param>
-        public void SaveM3u8(string baseDir, string playlistDir)
+        public void SaveM3u(string baseDir, string playlistDir)
         {
             // 自分と子供のプレイリストを保存
             var savedList = new List<string>();
-            SaveM3u8Core(baseDir, playlistDir, ref savedList);
+            SaveM3uCore(baseDir, playlistDir, ref savedList);
 
             // 現在のBaseDirに存在するplaylistファイルを取得
             var currentList = System.IO.Directory.GetFiles(baseDir, $"*.{PLAYLIST_EXTENSION}", SearchOption.AllDirectories);
@@ -168,7 +171,7 @@ namespace aTunesSync.iTunes
             }
         }
 
-        private void SaveM3u8Core(string baseDir, string playlistDir, ref List<string> savedPaths)
+        private void SaveM3uCore(string baseDir, string playlistDir, ref List<string> savedPaths)
         {
             if (!System.IO.Directory.Exists(baseDir))
                 throw new System.IO.DirectoryNotFoundException();
@@ -177,12 +180,13 @@ namespace aTunesSync.iTunes
 
             if (!IsRoot && !IsFolder)
             {
-                var path = CreateM3u8Path(baseDir, playlistDir);
+                var path = CreateM3uPath(baseDir, playlistDir);
                 var lines = CreatePlaylistContent(baseDir);
                 if (lines != null)
                 {
                     MessageEvent($"[CREATE] {path}");
-                    System.IO.File.WriteAllLines(path, lines, Encoding.UTF8);
+                    var utf8nobom = new System.Text.UTF8Encoding(false);
+                    System.IO.File.WriteAllLines(path, lines, utf8nobom);
                     savedPaths.Add(path);
                 }
             }
@@ -190,12 +194,12 @@ namespace aTunesSync.iTunes
             // 子供も作る
             foreach (var child in Children)
             {
-                child.SaveM3u8Core(baseDir, playlistDir,ref savedPaths);
+                child.SaveM3uCore(baseDir, playlistDir,ref savedPaths);
             }
         }
 
         private static readonly char PLAYLIST_TREE_SEPARATOR = '_';
-        private string CreateM3u8Path(string baseDir, string playlistDir)
+        private string CreateM3uPath(string baseDir, string playlistDir)
         {
             // ルートまで親の名前を調べる
             var tree = new List<string>();
@@ -233,7 +237,7 @@ namespace aTunesSync.iTunes
             return result;
         }
 
-        private static readonly string ANDROID_ROOT_PATH = "primary/";
+        private static readonly string ANDROID_ROOT_PATH = "/storage/emulated/0/Music/";
         public List<string> CreatePlaylistContent(string baseDir)
         {
             if (Musics.Count <= 0)
