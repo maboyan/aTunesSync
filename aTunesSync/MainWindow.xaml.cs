@@ -66,7 +66,7 @@ namespace aTunesSync
                     AddLog("Create iTunes Playlist");
                     var itunes = new iTunesParser(m_mainViewModel.iTunesLibraryPath.Value);
                     var playlist = await itunes.ParseAsync();
-                    playlist.SaveM3u8(m_mainViewModel.WindowsRootDirectory.Value, m_mainViewModel.PlaylistDirectoryName.Value);
+                    playlist.SaveM3u(m_mainViewModel.WindowsRootDirectory.Value, m_mainViewModel.PlaylistDirectoryName.Value);
 
                     AddLog("Get Android File List");
                     var androidFiles = await GetAndroidFilesAsync(device);
