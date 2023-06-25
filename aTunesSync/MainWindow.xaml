@@ -72,6 +72,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <Grid Grid.Column="0">
@@ -79,8 +80,9 @@
                     <TextBlock Text="{Binding ProgressBarText.Value}" HorizontalAlignment="Center" VerticalAlignment="Center" />
 
                 </Grid>
-                <Button Grid.Column="1" Margin="5 5 5 5" HorizontalAlignment="Right" Click="CheckButton_Click" Width="50" Content="Prepare" IsEnabled="{Binding CheckButtonEnable.Value}" />
-                <Button Grid.Column="2" Margin="5 5 5 5" HorizontalAlignment="Right" Click="SyncButton_Click" Width="50" Content="{Binding SyncButtonText.Value}" IsEnabled="{Binding SyncButtonEnable.Value}" />
+                <CheckBox Grid.Column="1" Margin="5 8 5 5" Content="Overwrite" IsChecked="{Binding IsOverwrite.Value}" IsEnabled="{Binding OverwriteCheckBoxEnable.Value}" />
+                <Button Grid.Column="2" Margin="5 5 5 5" HorizontalAlignment="Right" Click="CheckButton_Click" Width="50" Content="Prepare" IsEnabled="{Binding CheckButtonEnable.Value}" />
+                <Button Grid.Column="3" Margin="5 5 5 5" HorizontalAlignment="Right" Click="SyncButton_Click" Width="50" Content="{Binding SyncButtonText.Value}" IsEnabled="{Binding SyncButtonEnable.Value}" />
             </Grid>
             
         </Grid><!-- Left -->

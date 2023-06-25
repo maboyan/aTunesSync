@@ -26,9 +26,9 @@ namespace aTunesSync.File.Windows
         /// </summary>
         /// <param name="root"></param>
         /// <returns></returns>
-        public SortedSet<FileBase> GetMusicFiles(string root)
+        public SortedSet<WindowsFile> GetMusicFiles(string root)
         {
-            var result = new SortedSet<FileBase>();
+            var result = new SortedSet<WindowsFile>();
 
             var mp3List = Directory.GetFiles(root, "*.mp3", SearchOption.AllDirectories);
             var m4aList = Directory.GetFiles(root, "*.m4a", SearchOption.AllDirectories);

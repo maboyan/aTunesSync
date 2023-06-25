@@ -1,4 +1,6 @@
-﻿using System;
+﻿using aTunesSync.File.Android;
+using aTunesSync.File.Windows;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,11 +10,11 @@ namespace aTunesSync.File
 {
     internal class FileSyncContent
     {
-        public IEnumerable<FileBase> CommonSet { get; private set; }
-        public IEnumerable<FileBase> AndroidOnlySet { get; private set; }
-        public IEnumerable<FileBase> WindowsOnlySet { get; private set; }
+        public CommonFileSet CommonSet { get; private set; }
+        public AndroidFileSet AndroidOnlySet { get; private set; }
+        public WindowsFileSet WindowsOnlySet { get; private set; }
 
-        public FileSyncContent(IEnumerable<FileBase> commonSet, IEnumerable<FileBase> androidOnlySet, IEnumerable<FileBase> windowsOnlySet)
+        public FileSyncContent(CommonFileSet commonSet, AndroidFileSet androidOnlySet, WindowsFileSet windowsOnlySet)
         {
             if (commonSet == null)
                 throw new ArgumentNullException(nameof(commonSet));
