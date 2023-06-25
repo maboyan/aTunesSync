@@ -30,7 +30,7 @@ namespace aTunesSync.File
         /// <param name="windows"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public async Task<FileSyncContent> CheckAsync(AndroidDevice device, SortedSet<FileBase> android, SortedSet<FileBase> windows)
+        public async Task<FileSyncContent> CheckAsync(AndroidDevice device, AndroidFileSet android, WindowsFileSet windows)
         {
             if (device == null)
                 throw new ArgumentNullException(nameof(device));
@@ -42,9 +42,11 @@ namespace aTunesSync.File
             FileSyncContent result = null;
             await Task.Run(() =>
             {
-                var commonSet = android.Intersect(windows);
-                var androidOnlySet = android.Except(windows);
-                var windowsOnlySet = windows.Except(android);
+                var calculator = new FileSetCalculator(android, windows);
+
+                var commonSet = calculator.CalcCommonSet();
+                var androidOnlySet = calculator.CalcAndroidOnlySet();
+                var windowsOnlySet = calculator.CalcWindowsOnlySet();
                 result = new FileSyncContent(commonSet, androidOnlySet, windowsOnlySet);
             });
              
@@ -56,9 +58,10 @@ namespace aTunesSync.File
         /// </summary>
         /// <param name="device"></param>
         /// <param name="content"></param>
+        /// <param name="overwrite"></param>
         /// <param name="token"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public async Task SyncAsync(AndroidDevice device, FileSyncContent content, CancellationToken token)
+        public async Task SyncAsync(AndroidDevice device, FileSyncContent content, bool overwrite, CancellationToken token)
         {
             if (device == null)
                 throw new ArgumentNullException(nameof(device));
@@ -69,9 +72,11 @@ namespace aTunesSync.File
             {
                 var sum = 0;
                 if (content.AndroidOnlySet != null)
-                    sum += content.AndroidOnlySet.Count();
+                    sum += content.AndroidOnlySet.FileSet.Count();
                 if (content.WindowsOnlySet != null)
-                    sum += content.WindowsOnlySet.Count();
+                    sum += content.WindowsOnlySet.FileSet.Count();
+                if (overwrite && content.CommonSet != null)
+                    sum += content.CommonSet.FileSet.Count();
 
                 var now = 0;
 
@@ -79,7 +84,7 @@ namespace aTunesSync.File
                 // 先に消すことでandroidへコピー時に上書き例外がでないようにする
                 if (content.AndroidOnlySet != null)
                 {
-                    foreach (var item in content.AndroidOnlySet)
+                    foreach (var item in content.AndroidOnlySet.FileSet)
                     {
                         if (token.IsCancellationRequested)
                         {
@@ -87,12 +92,8 @@ namespace aTunesSync.File
                             return;
                         }
 
-                        var androidItem = item as AndroidFile;
-                        if (androidItem == null)
-                            continue;
-
-                        MessageEvent($"[DELETE] {androidItem}");
-                        device.Delete(androidItem);
+                        MessageEvent($"[DELETE] {item}");
+                        device.Delete(item);
 
                         ++now;
                         SyncProgressEvent(now, sum);
@@ -102,7 +103,7 @@ namespace aTunesSync.File
                 // windows onlyはandroidへコピー
                 if (content.WindowsOnlySet != null)
                 {
-                    foreach (var item in content.WindowsOnlySet)
+                    foreach (var item in content.WindowsOnlySet.FileSet)
                     {
                         if (token.IsCancellationRequested)
                         {
@@ -110,13 +111,42 @@ namespace aTunesSync.File
                             return;
                         }
 
-                        var windowsItem = item as WindowsFile;
-                        if (windowsItem == null)
-                            continue;
-
-                        MessageEvent($"[COPY] {windowsItem}");
+                        MessageEvent($"[COPY] {item}");
                         try
                         {
+                            device.Copy(item);
+                        }
+                        catch (Exception e)
+                        {
+                            MessageEvent($"[SKIP] {item} {e.Message}");
+                        }
+
+                        ++now;
+                        SyncProgressEvent(now, sum);
+                    }
+                }
+
+                if (overwrite && content.CommonSet != null)
+                {
+                    foreach (var item in content.CommonSet.FileSet)
+                    {
+                        if (token.IsCancellationRequested)
+                        {
+                            MessageEvent($"Cancel Overwrite");
+                            return;
+                        }
+
+                        var windowsItem = item.Windows;
+                        if (windowsItem == null)
+                            continue;
+                        var androidItem = item.Android;
+                        if (androidItem == null)
+                            continue;
+
+                        MessageEvent($"[Overwrite] {windowsItem}");
+                        try
+                        {
+                            device.Delete(androidItem);
                             device.Copy(windowsItem);
                         }
                         catch (Exception e)

@@ -77,7 +77,7 @@ namespace aTunesSync
                     var sync = new FileSync();
                     m_fileSync = await sync.CheckAsync(device, androidFiles, windowsFiles);
                     m_mainViewModel.SyncContentList.Clear();
-                    foreach (var deleteItem in m_fileSync.AndroidOnlySet)
+                    foreach (var deleteItem in m_fileSync.AndroidOnlySet.FileSet)
                     {
                         m_mainViewModel.SyncContentList.Add(new SyncContent()
                         {
@@ -86,7 +86,7 @@ namespace aTunesSync
                             Path = deleteItem.FullPath
                         });
                     }
-                    foreach (var addItem in m_fileSync.WindowsOnlySet)
+                    foreach (var addItem in m_fileSync.WindowsOnlySet.FileSet)
                     {
                         m_mainViewModel.SyncContentList.Add(new SyncContent()
                         {
@@ -94,7 +94,22 @@ namespace aTunesSync
                             Name = addItem.Name,
                             Path = addItem.FullPath
                         });
-                    }                    
+                    }
+
+                    // 上書き指定がある場合既存の曲も上書き
+                    if (m_mainViewModel.IsOverwrite.Value)
+                    {
+                        foreach (var overwriteItem in m_fileSync.CommonSet.FileSet)
+                        {
+                            m_mainViewModel.SyncContentList.Add(new SyncContent()
+                            {
+                                Category = "Overwrite",
+                                Name = overwriteItem.Android.Name,
+                                Path = $"{overwriteItem.Android.FullPath} = {overwriteItem.Windows.FullPath}"
+                            });
+                        }
+                    }
+                
                 }
                 catch (Exception e)
                 {
@@ -110,9 +125,9 @@ namespace aTunesSync
             AddLog("End Prepare");
         }
 
-        private async Task<SortedSet<FileBase>> GetAndroidFilesAsync(AndroidDevice device)
+        private async Task<AndroidFileSet> GetAndroidFilesAsync(AndroidDevice device)
         {
-            SortedSet<FileBase> result = null;
+            AndroidFileSet result = null;
 
             await Task.Run(() =>
             {
@@ -122,15 +137,16 @@ namespace aTunesSync
                     m_mainViewModel.ProgressBarValue.Value = now * 100 / num;
                     m_mainViewModel.ProgressBarText.Value = $"{now} / {num}";
                 };
-                result = device.GetMusicFiles();
+                var set = device.GetMusicFiles();
+                result = new AndroidFileSet(set);
             });
 
             return result;
         }
 
-        private async Task<SortedSet<FileBase>> GetWindowsFilesAsync(string root)
+        private async Task<WindowsFileSet> GetWindowsFilesAsync(string root)
         {
-            SortedSet<FileBase> result = null;
+            WindowsFileSet result = null;
 
             await Task.Run(() =>
             {
@@ -140,7 +156,8 @@ namespace aTunesSync
                     m_mainViewModel.ProgressBarValue.Value = now * 100 / num;
                     m_mainViewModel.ProgressBarText.Value = $"{now} / {num}";
                 };
-                result = mng.GetMusicFiles(root);
+                var set = mng.GetMusicFiles(root);
+                result = new WindowsFileSet(set);
             });
             
             return result;
@@ -200,7 +217,7 @@ namespace aTunesSync
                 {
                     SetButtonSyncToCancel();
                     device.Initialize();
-                    await sync.SyncAsync(device, m_fileSync, m_cancelSource.Token);
+                    await sync.SyncAsync(device, m_fileSync, m_mainViewModel.IsOverwrite.Value, m_cancelSource.Token);
                 }
                 catch(MusicDirectoryNotFoundException)
                 {
@@ -328,6 +345,7 @@ namespace aTunesSync
             m_mainViewModel.PlaylistDirectoryEnable.Value = enable;
             m_mainViewModel.CheckButtonEnable.Value = enable;
             m_mainViewModel.SyncButtonEnable.Value = enable;
+            m_mainViewModel.OverwriteCheckBoxEnable.Value = enable;
         }
 
         private void SetButtonSyncToCancel()

@@ -89,13 +89,13 @@ namespace aTunesSync.File.Android
         /// </summary>
         /// <param name="root"></param>
         /// <returns></returns>
-        public SortedSet<FileBase> GetMusicFiles()
+        public SortedSet<AndroidFile> GetMusicFiles()
         {
             if (string.IsNullOrWhiteSpace(MusicDirectory))
                 throw new InvalidOperationException("Initialize not call");
 
             var root = MusicDirectory;
-            var result = new SortedSet<FileBase>();
+            var result = new SortedSet<AndroidFile>();
 
             var mp3List = Device.GetFileSystemEntries(root, "*.mp3", System.IO.SearchOption.AllDirectories);
             var m4aList = Device.GetFileSystemEntries(root, "*.m4a", System.IO.SearchOption.AllDirectories);

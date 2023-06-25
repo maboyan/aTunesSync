@@ -14,6 +14,8 @@ namespace aTunesSync.ViewModel
         public ReactiveProperty<string> WindowsRootDirectory { get; set; } = new ReactiveProperty<string>("");
         public ReactiveProperty<string> iTunesLibraryPath { get; set; } = new ReactiveProperty<string>("");
         public ReactiveProperty<string> PlaylistDirectoryName { get; set; } = new ReactiveProperty<string>("Playlist");
+        public ReactiveProperty<bool> IsOverwrite { get; set; } = new ReactiveProperty<bool>(false);
+
 
         public ReactiveProperty<string> SyncButtonText { get; set; } = new ReactiveProperty<string>("Sync");
         public ReactiveProperty<bool> AndroidDeviceEnable { get; set; } = new ReactiveProperty<bool>(true);
@@ -22,8 +24,10 @@ namespace aTunesSync.ViewModel
         public ReactiveProperty<bool> iTunesLibraryEnable { get; set; } = new ReactiveProperty<bool>(true);
         public ReactiveProperty<bool> iTunesLibraryDialogEnable { get; set; } = new ReactiveProperty<bool>(true);
         public ReactiveProperty<bool> PlaylistDirectoryEnable { get; set; } = new ReactiveProperty<bool>(true);
+        public ReactiveProperty<bool> OverwriteCheckBoxEnable { get; set; } = new ReactiveProperty<bool>(true);
         public ReactiveProperty<bool> CheckButtonEnable { get; set; } = new ReactiveProperty<bool>(true);
         public ReactiveProperty<bool> SyncButtonEnable { get; set; } = new ReactiveProperty<bool>(false); // syncはcheckをしないとtrueにならない
+
 
         public ReactiveProperty<string> ProgressBarText { get; set; } = new ReactiveProperty<string>("");
         public ReactiveProperty<int> ProgressBarValue { get; set; } = new ReactiveProperty<int>(0);
