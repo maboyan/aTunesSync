@@ -58,8 +58,10 @@ namespace aTunesSync.File
             get
             {
                 var lastIndex = RelativePath.LastIndexOf(DirectorySeparatorChar);
+
+                // 見つからない場合は多分ディレクトリに入っていないのでRelativePathがファイル
                 if (lastIndex < 0)
-                    return "";
+                    return RelativePath;
 
                 // 最後がDirectorySeparatorCharで終わっていて多分ディレクトリ
                 if (lastIndex + 1 >= RelativePath.Length)

@@ -29,7 +29,7 @@ namespace aTunesSync
     /// </summary>
     public partial class MainWindow : Window
     {
-        private static readonly string LIBRARY_FILE_NAME = "playlist_musics.json";
+        private static readonly string LIBRARY_FILE_NAME = "library.json";
 
         private MainViewModel m_mainViewModel = new MainViewModel();
         private FileSyncContent m_fileSync = null;
@@ -75,9 +75,9 @@ namespace aTunesSync
                     rootPlayList.SaveAllMusics(m_mainViewModel.WindowsRootDirectory.Value, libraryPath);
 
                     AddLog("Get Android File List");
-                    var androidFiles = await GetAndroidFilesAsync(device);
+                    var androidFiles = await GetAndroidFilesAsync(device, LIBRARY_FILE_NAME);
                     AddLog("Get Windows File List");
-                    var windowsFiles = await GetWindowsFilesAsync(m_mainViewModel.WindowsRootDirectory.Value);
+                    var windowsFiles = await GetWindowsFilesAsync(m_mainViewModel.WindowsRootDirectory.Value, LIBRARY_FILE_NAME);
 
                     AddLog("Create Sync Content");
                     var sync = new FileSync();
@@ -102,9 +102,8 @@ namespace aTunesSync
                         });
                     }
 
-                    // 上書き指定がある場合既存の曲も上書き
                     if (m_mainViewModel.IsOverwrite.Value)
-                    {
+                    {// 強制上書き命令がでているので何も考えずに上書き
                         foreach (var overwriteItem in m_fileSync.CommonSet.FileSet)
                         {
                             m_mainViewModel.SyncContentList.Add(new SyncContent()
@@ -113,6 +112,16 @@ namespace aTunesSync
                                 Name = overwriteItem.Android.Name,
                                 Path = $"{overwriteItem.Android.FullPath} = {overwriteItem.Windows.FullPath}"
                             });
+                        }
+                    }
+                    else
+                    {// 強制上書き命令がでていないのでちゃんとUpdateする
+                        var androidLibrary = androidFiles.Search(LIBRARY_FILE_NAME);
+                        var windowsLibrary = windowsFiles.Search(LIBRARY_FILE_NAME);
+                        if (androidFiles != null && windowsLibrary != null)
+                        {
+                            // TODO
+                            // windowsとandroidの中身を比較してアップデート
                         }
                     }
                 
@@ -131,7 +140,7 @@ namespace aTunesSync
             AddLog("End Prepare");
         }
 
-        private async Task<AndroidFileSet> GetAndroidFilesAsync(AndroidDevice device)
+        private async Task<AndroidFileSet> GetAndroidFilesAsync(AndroidDevice device, string libraryName)
         {
             AndroidFileSet result = null;
 
@@ -144,13 +153,16 @@ namespace aTunesSync
                     m_mainViewModel.ProgressBarText.Value = $"{now} / {num}";
                 };
                 var set = device.GetMusicFiles();
+                var library = device.GetLibraryFile(libraryName);
+                if (library != null)
+                    set.Add(library);
                 result = new AndroidFileSet(set);
             });
 
             return result;
         }
 
-        private async Task<WindowsFileSet> GetWindowsFilesAsync(string root)
+        private async Task<WindowsFileSet> GetWindowsFilesAsync(string root, string libraryName)
         {
             WindowsFileSet result = null;
 
@@ -163,6 +175,9 @@ namespace aTunesSync
                     m_mainViewModel.ProgressBarText.Value = $"{now} / {num}";
                 };
                 var set = mng.GetMusicFiles(root);
+                var library = mng.GetLibraryFile(root, libraryName);
+                if (library != null)
+                    set.Add(library);
                 result = new WindowsFileSet(set);
             });
             

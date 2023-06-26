@@ -68,5 +68,24 @@ namespace aTunesSync.File.Windows
 
             return result;
         }
+
+        /// <summary>
+        /// 引数rootのディレクトリに存在するnameファイルを探す
+        /// rootから再帰的には探しません
+        /// 複数見つかった場合の動作は不定
+        /// </summary>
+        /// <param name="root"></param>
+        /// <param name="name"></param>
+        /// <returns>見つからなかった場合はnull</returns>
+        public WindowsFile GetLibraryFile(string root, string name)
+        {
+            var libraryList = Directory.GetFiles(root, name);
+            if (libraryList == null || libraryList.Length <= 0)
+                return null;
+
+            var info = new FileInfo(libraryList[0]);
+            var result = new WindowsFile(info, root);
+            return result;
+        }
     }
 }
