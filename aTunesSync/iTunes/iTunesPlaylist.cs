@@ -312,6 +312,8 @@ namespace aTunesSync.iTunes
                 if (!music.Path.StartsWith(baseDir))
                     throw new InvalidOperationException($"file path belongs to root {music.Path}");
                 var relativePath = path.Substring(baseDir.Length);
+                if (relativePath.StartsWith("\\"))
+                    relativePath = relativePath.Substring(1);
 
                 var newMusic = new iTunesMusic(music.Id, music.Name, relativePath, music.DateModified);
                 relativeList.Add(newMusic);
@@ -325,6 +327,25 @@ namespace aTunesSync.iTunes
             var json = JsonSerializer.Serialize(relativeList, options);
 
             System.IO.File.WriteAllText(savePath, json);
+        }
+
+        /// <summary>
+        /// JSON文字列から
+        /// int => iTunesMusic
+        /// のハッシュを作る
+        /// </summary>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        public static Dictionary<int, iTunesMusic> LoadAllMusics(string json)
+        {
+            var list = JsonSerializer.Deserialize<List<iTunesMusic>>(json);
+            var result = new Dictionary<int, iTunesMusic>();
+            foreach (var music in list)
+            {
+                result.Add(music.Id, music);
+            }
+
+            return result;
         }
         #endregion
     }

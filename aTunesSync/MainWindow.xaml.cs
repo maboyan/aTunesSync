@@ -118,10 +118,20 @@ namespace aTunesSync
                     {// 強制上書き命令がでていないのでちゃんとUpdateする
                         var androidLibrary = androidFiles.Search(LIBRARY_FILE_NAME);
                         var windowsLibrary = windowsFiles.Search(LIBRARY_FILE_NAME);
-                        if (androidFiles != null && windowsLibrary != null)
+                        if (androidLibrary != null && windowsLibrary != null)
                         {
-                            // TODO
-                            // windowsとandroidの中身を比較してアップデート
+                            var updateSet = GetUpdateFilesAsync(device, androidLibrary, windowsLibrary, m_fileSync.CommonSet);
+                            m_fileSync.AppendUpdateSet(updateSet);
+
+                            foreach (var updateItem in m_fileSync.UpdateSet.FileSet)
+                            {
+                                m_mainViewModel.SyncContentList.Add(new SyncContent()
+                                {
+                                    Category = "Update",
+                                    Name = updateItem.Android.Name,
+                                    Path = $"{updateItem.Android.FullPath} = {updateItem.Windows.FullPath}"
+                                });
+                            }
                         }
                     }
                 
@@ -183,6 +193,47 @@ namespace aTunesSync
             
             return result;
         }
+
+        private CommonFileSet GetUpdateFilesAsync(AndroidDevice device, AndroidFile androidLibrary, WindowsFile windowsLibrary, CommonFileSet commonSet)
+        {
+            var androidBytes = device.Download(androidLibrary);
+            var androidString = Encoding.UTF8.GetString(androidBytes);
+            var androidDic = iTunesPlaylist.LoadAllMusics(androidString);
+
+            var mng = new WindowsFileManager();
+            var windowsBytes = mng.Read(windowsLibrary);
+            var windowsString = Encoding.UTF8.GetString(windowsBytes);
+            var windowsDic = iTunesPlaylist.LoadAllMusics(windowsString);
+
+            // windows側にあるファイルを基準としつつ、Update対象を絞り込む
+            var updateSet = new SortedSet<CommonFile>();
+            foreach(var id in windowsDic.Keys)
+            {
+                // windowsとandroidに同じファイルがある？
+                if (!androidDic.ContainsKey(id))
+                    continue;
+                var win = windowsDic[id];
+                var android = androidDic[id];
+                if (win.Path != android.Path)
+                    continue;
+
+                // 更新日時がWindowsのほうが新しい？
+                if (win.DateModified <= android.DateModified)
+                    continue;
+
+                // commonsetに含まれている？
+                var commonItem = commonSet.FileSet.FirstOrDefault((a) => a.Windows.RelativePath == win.Path);
+                if (commonItem == null)
+                    continue;
+
+                // 条件をクリアしたので合格
+                updateSet.Add(commonItem);
+            }
+
+            var result = new CommonFileSet(updateSet);
+            return result;
+        }
+
         #endregion
 
         #region Sync Bottun

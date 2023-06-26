@@ -13,6 +13,7 @@ namespace aTunesSync.File
         public CommonFileSet CommonSet { get; private set; }
         public AndroidFileSet AndroidOnlySet { get; private set; }
         public WindowsFileSet WindowsOnlySet { get; private set; }
+        public CommonFileSet UpdateSet { get; private set; }
 
         public FileSyncContent(CommonFileSet commonSet, AndroidFileSet androidOnlySet, WindowsFileSet windowsOnlySet)
         {
@@ -23,9 +24,20 @@ namespace aTunesSync.File
             if (windowsOnlySet == null)
                 throw new ArgumentNullException(nameof(windowsOnlySet));
 
+            // UpdateSetはあとから導入した関係でこの時点では確定できないので何もしない
+
             CommonSet = commonSet;
             AndroidOnlySet = androidOnlySet;
             WindowsOnlySet = windowsOnlySet;
+            UpdateSet = null;
+        }
+
+        public void AppendUpdateSet(CommonFileSet updateSet)
+        {
+            if (updateSet == null)
+                throw new ArgumentNullException(nameof(updateSet));
+
+            UpdateSet = updateSet;
         }
     }
 }
