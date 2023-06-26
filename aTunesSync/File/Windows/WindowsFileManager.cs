@@ -87,5 +87,20 @@ namespace aTunesSync.File.Windows
             var result = new WindowsFile(info, root);
             return result;
         }
+
+        /// <summary>
+        /// 引数のパスからファイルを読み込む
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public byte[] Read(WindowsFile file)
+        {
+            if (file == null)
+                throw new ArgumentNullException("file");
+
+            var result = System.IO.File.ReadAllBytes(file.FullPath);
+            return result;
+        }
     }
 }

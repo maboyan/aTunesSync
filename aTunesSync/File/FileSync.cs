@@ -75,8 +75,23 @@ namespace aTunesSync.File
                     sum += content.AndroidOnlySet.FileSet.Count();
                 if (content.WindowsOnlySet != null)
                     sum += content.WindowsOnlySet.FileSet.Count();
-                if (overwrite && content.CommonSet != null)
-                    sum += content.CommonSet.FileSet.Count();
+
+                // 上書きモードだったら共通ファイルをすべて使う
+                // そうじゃないならUpdateSetを使う
+                if (overwrite)
+                {
+                    if (content.CommonSet != null)
+                    {
+                        sum += content.CommonSet.FileSet.Count();
+                    }
+                }
+                else
+                {
+                    if (content.UpdateSet != null)
+                    {
+                        sum += content.UpdateSet.FileSet.Count();
+                    }
+                }
 
                 var now = 0;
 
@@ -114,7 +129,7 @@ namespace aTunesSync.File
                         MessageEvent($"[COPY] {item}");
                         try
                         {
-                            device.Copy(item);
+                            device.Upload(item);
                         }
                         catch (Exception e)
                         {
@@ -126,38 +141,77 @@ namespace aTunesSync.File
                     }
                 }
 
-                if (overwrite && content.CommonSet != null)
-                {
-                    foreach (var item in content.CommonSet.FileSet)
+                if (overwrite)
+                {// 強制上書きモード
+                    if (content.CommonSet != null)
                     {
-                        if (token.IsCancellationRequested)
+                        foreach (var item in content.CommonSet.FileSet)
                         {
-                            MessageEvent($"Cancel Overwrite");
-                            return;
-                        }
+                            if (token.IsCancellationRequested)
+                            {
+                                MessageEvent($"Cancel Overwrite");
+                                return;
+                            }
 
-                        var windowsItem = item.Windows;
-                        if (windowsItem == null)
-                            continue;
-                        var androidItem = item.Android;
-                        if (androidItem == null)
-                            continue;
+                            var windowsItem = item.Windows;
+                            if (windowsItem == null)
+                                continue;
+                            var androidItem = item.Android;
+                            if (androidItem == null)
+                                continue;
 
-                        MessageEvent($"[Overwrite] {windowsItem}");
-                        try
-                        {
-                            device.Delete(androidItem);
-                            device.Copy(windowsItem);
-                        }
-                        catch (Exception e)
-                        {
-                            MessageEvent($"[SKIP] {windowsItem} {e.Message}");
-                        }
+                            MessageEvent($"[Overwrite] {windowsItem}");
+                            try
+                            {
+                                device.Delete(androidItem);
+                                device.Upload(windowsItem);
+                            }
+                            catch (Exception e)
+                            {
+                                MessageEvent($"[SKIP] {windowsItem} {e.Message}");
+                            }
 
-                        ++now;
-                        SyncProgressEvent(now, sum);
+                            ++now;
+                            SyncProgressEvent(now, sum);
+                        }
                     }
                 }
+                else
+                {// 上書きモードではないので更新Setを見る
+                    if (content.UpdateSet != null)
+                    {
+                        foreach (var item in content.UpdateSet.FileSet)
+                        {
+                            if (token.IsCancellationRequested)
+                            {
+                                MessageEvent($"Cancel Update");
+                                return;
+                            }
+
+                            var windowsItem = item.Windows;
+                            if (windowsItem == null)
+                                continue;
+                            var androidItem = item.Android;
+                            if (androidItem == null)
+                                continue;
+
+                            MessageEvent($"[Update] {windowsItem}");
+                            try
+                            {
+                                device.Delete(androidItem);
+                                device.Upload(windowsItem);
+                            }
+                            catch (Exception e)
+                            {
+                                MessageEvent($"[SKIP] {windowsItem} {e.Message}");
+                            }
+
+                            ++now;
+                            SyncProgressEvent(now, sum);
+                        }
+                    }
+                }
+
 
                 // android側から空のディレクトリを消したほうがきれいになりそう
             });

@@ -163,13 +163,13 @@ namespace aTunesSync.File.Android
         }
         #endregion
 
-        #region Copy Delete
+        #region Upload Download Delete
         /// <summary>
         /// ファイルをWindows側からAndroid側にコピーする
         /// </summary>
         /// <param name="file"></param>
         /// <exception cref="InvalidOperationException"></exception>
-        public void Copy(WindowsFile file)
+        public void Upload(WindowsFile file)
         {
             if (file == null)
                 return;
@@ -187,6 +187,25 @@ namespace aTunesSync.File.Android
             using (var stream = new System.IO.FileStream(file.FullPath, System.IO.FileMode.Open))
             {
                 Device.UploadFile(stream, path);
+            }
+        }
+
+        /// <summary>
+        /// ファイルをAndroid側からダウンロードする
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public byte[] Download(AndroidFile file)
+        {
+            if (string.IsNullOrWhiteSpace(MusicDirectory))
+                throw new InvalidOperationException("Initialize not call");
+
+            using (var stream = new System.IO.MemoryStream())
+            {
+                Device.DownloadFile(file.FullPath, stream);
+                var result = stream.ToArray();
+                return result;
             }
         }
 

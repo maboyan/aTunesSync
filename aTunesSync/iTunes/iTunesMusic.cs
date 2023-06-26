@@ -8,12 +8,15 @@ using System.Windows.Controls;
 
 namespace aTunesSync.iTunes
 {
+    /// <summary>
+    /// JsonConverterを書くのがめんどくさくて色々と雑な作り
+    /// </summary>
     internal class iTunesMusic
     {
-        public int Id { get; private set; }
-        public string Name { get; private set; }
-        public string Path { get; private set; }
-        public DateTime DateModified { get; private set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Path { get; set; }
+        public DateTime DateModified { get; set; }
 
         public iTunesMusic(int id, string name, string path, string dateModified)
         {
@@ -62,6 +65,17 @@ namespace aTunesSync.iTunes
             Name = name;
             Path = path;
             DateModified = dateModified;
+        }
+
+        /// <summary>
+        /// JSON用にからのコンストラクタ
+        /// </summary>
+        public iTunesMusic()
+        {
+            Id = -1;
+            Name = null;
+            Path = null;
+            DateModified = DateTime.MinValue;
         }
     }
 }
