@@ -251,6 +251,8 @@ namespace aTunesSync.iTunes
                 if (!music.Path.StartsWith(baseDir))
                     throw new InvalidOperationException($"file path belongs to root {music.Path}");
                 var relativePath = music.Path.Substring(baseDir.Length);
+                if (relativePath.StartsWith(System.IO.Path.DirectorySeparatorChar))
+                    relativePath = relativePath.Substring(1);
                 var androidPath = ANDROID_ROOT_PATH + relativePath;
                 var addPath = androidPath.Replace('\\', '/');
 
