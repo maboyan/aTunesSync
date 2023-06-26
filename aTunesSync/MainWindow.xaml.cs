@@ -121,8 +121,19 @@ namespace aTunesSync
                         if (androidLibrary != null && windowsLibrary != null)
                         {
                             var updateSet = GetUpdateFilesAsync(device, androidLibrary, windowsLibrary, m_fileSync.CommonSet);
-                            m_fileSync.AppendUpdateSet(updateSet);
+                            // Updateした場合はプレイリストも転送しないとプレイリスト側でうまく認識しないので送る
+                            // 作りがいまいちなので全部送る
+                            if (updateSet.FileSet.Count > 0)
+                            {
+                                var playlists = m_fileSync.CommonSet.GetPlaylists(m_mainViewModel.WindowsRootDirectory.Value, m_mainViewModel.PlaylistDirectoryName.Value);
+                                foreach(var p in playlists)
+                                {
+                                    updateSet.FileSet.Add(p);
+                                }
+                            }
 
+                            m_fileSync.AppendUpdateSet(updateSet);
+                            
                             foreach (var updateItem in m_fileSync.UpdateSet.FileSet)
                             {
                                 m_mainViewModel.SyncContentList.Add(new SyncContent()
@@ -132,6 +143,8 @@ namespace aTunesSync
                                     Path = $"{updateItem.Android.FullPath} = {updateItem.Windows.FullPath}"
                                 });
                             }
+
+                            
                         }
                     }
                 
