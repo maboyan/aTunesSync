@@ -255,6 +255,7 @@ namespace aTunesSync.iTunes
                 var addPath = androidPath.Replace('\\', '/');
 
                 result.Add("#EXT-X-RATING:0");
+                result.Add($"#MODIFIED-DATE:{music.DateModified.ToString("u")}");
                 result.Add(addPath);
             }
 

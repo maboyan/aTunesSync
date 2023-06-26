@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,8 +12,9 @@ namespace aTunesSync.iTunes
         public int Id { get; private set; }
         public string Name { get; private set; }
         public string Path { get; private set; }
+        public DateTime DateModified { get; private set; }
 
-        public iTunesMusic(int id, string name, string path)
+        public iTunesMusic(int id, string name, string path, string dateModified)
         {
             if (id < 0)
                 throw new ArgumentOutOfRangeException("id");
@@ -20,6 +22,8 @@ namespace aTunesSync.iTunes
                 throw new ArgumentNullException("name");
             if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentNullException("path");
+            if (string.IsNullOrWhiteSpace(dateModified))
+                throw new ArgumentNullException("dateModified");
 
             Id = id;
             Name = name;
@@ -32,6 +36,7 @@ namespace aTunesSync.iTunes
                 throw new System.IO.FileNotFoundException();
 
             Path = winPath;
+            DateModified = DateTime.Parse(dateModified);
         }
     }
 }

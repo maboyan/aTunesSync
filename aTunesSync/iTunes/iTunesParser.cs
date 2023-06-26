@@ -127,9 +127,11 @@ namespace aTunesSync.iTunes
             var id = int.Parse(key.Value);
             string name = null;
             string path = null;
+            string date = null;
 
             var bNextName = false;
             var bNextPath = false;
+            var bNextDate = false;
             foreach(XElement child in dict.Nodes())
             {
                 if (bNextName)
@@ -150,6 +152,15 @@ namespace aTunesSync.iTunes
                     bNextPath = false;
                     continue;
                 }
+                if (bNextDate)
+                {
+                    if (child.Name != "date")
+                        throw new InvalidOperationException("Unknown format");
+
+                    date = child.Value;
+                    bNextDate = false;
+                    continue;
+                }
 
                 if (child.Name == "key" && child.Value == "Name")
                 {
@@ -161,12 +172,17 @@ namespace aTunesSync.iTunes
                     bNextPath = true;
                     continue;
                 }
+                if (child.Name == "key" && child.Value == "Date Modified")
+                {
+                    bNextDate = true;
+                    continue;
+                }
 
-                if (name != null && path != null)
+                if (name != null && path != null && date != null)
                     break;
             }
 
-            var result = new iTunesMusic(id, name, path);
+            var result = new iTunesMusic(id, name, path, date);
             return result;
         }
 
