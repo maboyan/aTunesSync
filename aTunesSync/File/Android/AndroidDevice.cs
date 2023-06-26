@@ -135,6 +135,32 @@ namespace aTunesSync.File.Android
 
             return result;
         }
+
+        /// <summary>
+        /// TOPディレクトリに置いてあるライブラリファイルを取得する
+        /// ファイルが複数ある場合の動作は不定
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>ファイルが存在しない場合はnull</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        public AndroidFile GetLibraryFile(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException("name");
+            if (string.IsNullOrWhiteSpace(MusicDirectory))
+                throw new InvalidOperationException("Initialize not call");
+
+            var root = MusicDirectory;
+            var files = Device.GetFileSystemEntries(root, name);
+            if (files == null || files.Count() <= 0)
+                return null;
+
+            var info = Device.GetFileInfo(files[0]);
+            var result = new AndroidFile(info, root);
+            return result;
+
+        }
         #endregion
 
         #region Copy Delete

@@ -24,5 +24,11 @@ namespace aTunesSync.File.Android
             var result = FileSet.SingleOrDefault(x => x.Equals(windows));
             return result;
         }
+
+        public AndroidFile Search(string name)
+        {
+            var result = FileSet.SingleOrDefault(x => x.Name == name);
+            return result;
+        }
     }
 }
