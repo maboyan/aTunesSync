@@ -18,5 +18,19 @@ namespace aTunesSync.File
 
             FileSet = fileSet;
         }
+
+        public SortedSet<CommonFile> GetPlaylists(string baseDir, string playlistDir)
+        {
+            var result = new SortedSet<CommonFile>();
+            foreach(var item in FileSet)
+            {
+                var dir = System.IO.Path.Combine(baseDir, playlistDir);
+                var path = item.Windows.FullPath;
+                if (path.StartsWith(dir))
+                    result.Add(item);
+            }
+
+            return result;
+        }
     }
 }
