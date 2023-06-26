@@ -29,6 +29,8 @@ namespace aTunesSync
     /// </summary>
     public partial class MainWindow : Window
     {
+        private static readonly string LIBRARY_FILE_NAME = "playlist_musics.json";
+
         private MainViewModel m_mainViewModel = new MainViewModel();
         private FileSyncContent m_fileSync = null;
         private CancellationTokenSource m_cancelSource = null;
@@ -65,8 +67,12 @@ namespace aTunesSync
 
                     AddLog("Create iTunes Playlist");
                     var itunes = new iTunesParser(m_mainViewModel.iTunesLibraryPath.Value);
-                    var playlist = await itunes.ParseAsync();
-                    playlist.SaveM3u(m_mainViewModel.WindowsRootDirectory.Value, m_mainViewModel.PlaylistDirectoryName.Value);
+                    var rootPlayList = await itunes.ParseAsync();
+                    rootPlayList.SaveM3u(m_mainViewModel.WindowsRootDirectory.Value, m_mainViewModel.PlaylistDirectoryName.Value);
+
+                    AddLog("Create iTunes Playlist All Musics");
+                    var libraryPath = System.IO.Path.Combine(m_mainViewModel.WindowsRootDirectory.Value, LIBRARY_FILE_NAME);
+                    rootPlayList.SaveAllMusics(m_mainViewModel.WindowsRootDirectory.Value, libraryPath);
 
                     AddLog("Get Android File List");
                     var androidFiles = await GetAndroidFilesAsync(device);

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace aTunesSync.iTunes
 {
@@ -37,6 +38,30 @@ namespace aTunesSync.iTunes
 
             Path = winPath;
             DateModified = DateTime.Parse(dateModified);
+        }
+
+        /// <summary>
+        /// 他のiTunesMusicから流用するときに使う
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="name"></param>
+        /// <param name="path"></param>
+        /// <param name="dateModified"></param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        public iTunesMusic(int id, string name, string path, DateTime dateModified)
+        {
+            if (id < 0)
+                throw new ArgumentOutOfRangeException("id");
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException("name");
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentNullException("path");
+
+            Id = id;
+            Name = name;
+            Path = path;
+            DateModified = dateModified;
         }
     }
 }
