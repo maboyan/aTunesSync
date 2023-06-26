@@ -4,6 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 
 namespace aTunesSync.iTunes
@@ -148,6 +151,7 @@ namespace aTunesSync.iTunes
             Children.Remove(item);
         }
 
+        #region M3U
         /// <summary>
         /// プレイリストを引数の場所に保存する
         /// </summary>
@@ -262,6 +266,66 @@ namespace aTunesSync.iTunes
 
             return result;
         }
+        #endregion
 
+        #region Music List
+        /// <summary>
+        /// 自分自信や子供のプレイリストに含まれている楽曲をすべて取得
+        /// </summary>
+        /// <returns></returns>
+        public List<iTunesMusic> GetAllMusics()
+        {
+            var list = new List<iTunesMusic>();
+            GetAllMusicsCore(ref list);
+
+            // プレイリストを走査しただけなので同じやつが含まれている
+            var result = list.GroupBy((a) => a.Id).Select(a => a.First()).ToList();
+
+            return result;
+        }
+
+        private void GetAllMusicsCore(ref List<iTunesMusic> result)
+        {
+            result.AddRange(Musics);
+
+            foreach(var child in Children)
+            {
+                child.GetAllMusicsCore(ref result);
+            }
+        }
+
+        /// <summary>
+        /// GetAllMusicsの結果をファイルに書き出す
+        /// </summary>
+        /// <param name="baseDir"></param>
+        /// <param name="savePath"></param>
+        public void SaveAllMusics(string baseDir, string savePath)
+        {
+            var list = GetAllMusics();
+            list.Sort((a, b) => a.Id.CompareTo(b.Id));
+
+            // Pathからbasepathを消した新しいlistを作成
+            var relativeList = new List<iTunesMusic>(list.Count);
+            foreach(var music in list)
+            {
+                var path = music.Path;
+                if (!music.Path.StartsWith(baseDir))
+                    throw new InvalidOperationException($"file path belongs to root {music.Path}");
+                var relativePath = path.Substring(baseDir.Length);
+
+                var newMusic = new iTunesMusic(music.Id, music.Name, relativePath, music.DateModified);
+                relativeList.Add(newMusic);
+            }
+
+            var options = new JsonSerializerOptions()
+            {
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
+                WriteIndented = true,
+            };
+            var json = JsonSerializer.Serialize(relativeList, options);
+
+            System.IO.File.WriteAllText(savePath, json);
+        }
+        #endregion
     }
 }
